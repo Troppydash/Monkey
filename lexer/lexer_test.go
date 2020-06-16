@@ -33,12 +33,12 @@ let result = add(five, ten);`
 		{token.IDENT, "ten", 2, 5},
 		{token.ASSIGN, "=", 2, 9},
 		{token.INT, "10", 2, 11},
-		{token.SEMICOLON, ";", 2, 12},
+		{token.SEMICOLON, ";", 2, 13},
 		{token.LET, "let", 4, 1},
 		{token.IDENT, "add", 4, 5},
 		{token.ASSIGN, "=", 4, 9},
 		{token.FUNCTION, "fn", 4, 11},
-		{token.LPAREN, "(", 4, 12},
+		{token.LPAREN, "(", 4, 13},
 		{token.IDENT, "x", 4, 14},
 		{token.COMMA, ",", 4, 15},
 		{token.IDENT, "y", 4, 17},
@@ -60,7 +60,7 @@ let result = add(five, ten);`
 		{token.IDENT, "ten", 8, 24},
 		{token.RPAREN, ")", 8, 27},
 		{token.SEMICOLON, ";", 8, 28},
-		{token.EOF, "", 8, 29},
+		{token.EOF, "\x00", 8, 29},
 	}
 
 	l := New(input, "TestFile")
@@ -78,12 +78,12 @@ let result = add(five, ten);`
 		}
 
 		if tok.RowNumber != tt.expectedRow {
-			t.Fatalf("tests[%d] - rownumber wrong. expected=%q, got=%q",
+			t.Fatalf("tests[%d] - rowNumber wrong. expected=%d, got=%d",
 				i, tt.expectedRow, tok.RowNumber)
 		}
 
 		if tok.ColumnNumber != tt.expectedColumn {
-			t.Fatalf("tests[%d] - columnnumber wrong. expected=%q, got=%q",
+			t.Fatalf("tests[%d] - columnNumber wrong. expected=%d, got=%d",
 				i, tt.expectedColumn, tok.ColumnNumber)
 		}
 	}

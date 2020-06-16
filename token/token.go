@@ -41,3 +41,20 @@ type Token struct {
 	ColumnNumber int64
 	Filename     string
 }
+
+// Hashmap to store string-TokenType values
+var keywords = map[string]TokenType{
+	"fn":  FUNCTION,
+	"let": LET,
+}
+
+// Return a TokenType from a plain string
+func LookupIdent(ident string) TokenType {
+	// Hashmap lookup
+	if tok, ok := keywords[ident]; ok {
+		// If found return it
+		return tok
+	}
+	// Else return ident
+	return IDENT
+}
