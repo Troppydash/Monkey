@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// TODO: Change the test
 // Test for Token Parsing
 func TestNextToken(t *testing.T) {
 	input := `let five = 5;
@@ -15,7 +14,18 @@ let add = fn(x, y) {
     x + y;
 };
 
-let result = add(five, ten);`
+let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
+
+if (5 < 10) {
+    return true;
+} else {
+    return false;
+}
+
+10 == 10;
+10 != 9;`
 
 	// What the Parser/Lexer should return
 	tests := []struct {
@@ -60,7 +70,49 @@ let result = add(five, ten);`
 		{token.IDENT, "ten", 8, 24},
 		{token.RPAREN, ")", 8, 27},
 		{token.SEMICOLON, ";", 8, 28},
-		{token.EOF, "\x00", 8, 29},
+		{token.BANG, "!", 9, 1},
+		{token.MINUS, "-", 9, 2},
+		{token.SLASH, "/", 9, 3},
+		{token.ASTERISK, "*", 9, 4},
+		{token.INT, "5", 9, 5},
+		{token.SEMICOLON, ";", 9, 6},
+		{token.INT, "5", 10, 1},
+		{token.LT, "<", 10, 3},
+		{token.INT, "10", 10, 5},
+		{token.GT, ">", 10, 8},
+		{token.INT, "5", 10, 10},
+		{token.SEMICOLON, ";", 10, 11},
+
+		{token.IF, "if", 10, 11},
+		{token.LPAREN, "(", 10, 11},
+		{token.INT, "5", 10, 11},
+		{token.LT, "<", 10, 11},
+		{token.INT, "10", 10, 11},
+		{token.RPAREN, ")", 10, 11},
+		{token.LBRACE, "{", 10, 11},
+
+		{token.RETURN, "return", 10, 11},
+		{token.TRUE, "true", 10, 11},
+		{token.SEMICOLON, ";", 10, 11},
+
+		{token.RBRACE, "}", 10, 11},
+		{token.ELSE, "else", 10, 11},
+		{token.LBRACE, "{", 10, 11},
+		{token.RETURN, "return", 10, 11},
+		{token.FALSE, "false", 10, 11},
+		{token.SEMICOLON, ";", 10, 11},
+		{token.RBRACE, "}", 10, 11},
+
+		{token.INT, "10", 10, 11},
+		{token.EQ, "==", 10, 11},
+		{token.INT, "10", 10, 11},
+		{token.SEMICOLON, ";", 10, 11},
+		{token.INT, "10", 10, 11},
+		{token.NOT_EQ, "!=", 10, 11},
+		{token.INT, "9", 10, 11},
+		{token.SEMICOLON, ";", 10, 11},
+
+		{token.EOF, "\x00", 10, 12},
 	}
 
 	l := New(input, "TestFile")
@@ -77,14 +129,17 @@ let result = add(five, ten);`
 				i, tt.expectedLiteral, tok.Literal)
 		}
 
-		if tok.RowNumber != tt.expectedRow {
-			t.Fatalf("tests[%d] - rowNumber wrong. expected=%d, got=%d",
-				i, tt.expectedRow, tok.RowNumber)
+		if TestLineNumbers {
+			if tok.RowNumber != tt.expectedRow {
+				t.Fatalf("tests[%d] - rowNumber wrong. expected=%d, got=%d",
+					i, tt.expectedRow, tok.RowNumber)
+			}
+
+			if tok.ColumnNumber != tt.expectedColumn {
+				t.Fatalf("tests[%d] - columnNumber wrong. expected=%d, got=%d",
+					i, tt.expectedColumn, tok.ColumnNumber)
+			}
 		}
 
-		if tok.ColumnNumber != tt.expectedColumn {
-			t.Fatalf("tests[%d] - columnNumber wrong. expected=%d, got=%d",
-				i, tt.expectedColumn, tok.ColumnNumber)
-		}
 	}
 }

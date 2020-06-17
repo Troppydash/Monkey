@@ -61,27 +61,68 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.ch {
 	case '=':
-		tok = NewToken(token.ASSIGN, l.ch, l.currentRow, l.currentColumn, l.currentFile)
-	case ';':
-		tok = NewToken(token.SEMICOLON, l.ch, l.currentRow, l.currentColumn, l.currentFile)
-	case '(':
-		tok = NewToken(token.LPAREN, l.ch, l.currentRow, l.currentColumn, l.currentFile)
-	case ')':
-		tok = NewToken(token.RPAREN, l.ch, l.currentRow, l.currentColumn, l.currentFile)
-	case ',':
-		tok = NewToken(token.COMMA, l.ch, l.currentRow, l.currentColumn, l.currentFile)
+		if l.PeekChar() == '=' {
+			// First '='
+			ch := l.ch
+
+			// Set the row numbers
+			tok = NewToken(token.EQ, 0)
+
+			// Advance Pointer
+			l.ReadChar()
+
+			// Set Literal
+			tok.Literal = string(ch) + string(l.ch)
+		} else {
+			tok = NewToken(token.ASSIGN, l.ch)
+		}
 	case '+':
-		tok = NewToken(token.PLUS, l.ch, l.currentRow, l.currentColumn, l.currentFile)
+		tok = NewToken(token.PLUS, l.ch)
+	case '-':
+		tok = NewToken(token.MINUS, l.ch)
+	case '*':
+		tok = NewToken(token.ASTERISK, l.ch)
+	case '/':
+		tok = NewToken(token.SLASH, l.ch)
+
+	case '!':
+		if l.PeekChar() == '=' {
+			// First '!'
+			ch := l.ch
+
+			// Set the row numbers
+			tok = NewToken(token.NOT_EQ, 0)
+
+			// Advance Pointer
+			l.ReadChar()
+
+			// Set Literal
+			tok.Literal = string(ch) + string(l.ch)
+		} else {
+			tok = NewToken(token.BANG, l.ch)
+		}
+	case '<':
+		tok = NewToken(token.LT, l.ch)
+	case '>':
+		tok = NewToken(token.GT, l.ch)
+
+	case ';':
+		tok = NewToken(token.SEMICOLON, l.ch)
+	case '(':
+		tok = NewToken(token.LPAREN, l.ch)
+	case ')':
+		tok = NewToken(token.RPAREN, l.ch)
+	case ',':
+		tok = NewToken(token.COMMA, l.ch)
 	case '{':
-		tok = NewToken(token.LBRACE, l.ch, l.currentRow, l.currentColumn, l.currentFile)
+		tok = NewToken(token.LBRACE, l.ch)
 	case '}':
-		tok = NewToken(token.RBRACE, l.ch, l.currentRow, l.currentColumn, l.currentFile)
+		tok = NewToken(token.RBRACE, l.ch)
 	case 0:
-		tok = NewToken(token.EOF, 0, l.currentRow, l.currentColumn, l.currentFile)
+		tok = NewToken(token.EOF, 0)
 	default:
 		// If is Text
 		if IsLetter(l.ch) {
-			// Assign Col/Row/File values
 			tok.ColumnNumber = l.currentColumn
 			tok.RowNumber = l.currentRow
 			tok.Filename = l.currentFile
@@ -91,10 +132,8 @@ func (l *Lexer) NextToken() token.Token {
 
 			// Set the type from the text
 			tok.Type = token.LookupIdent(tok.Literal)
-
 			return tok
 		} else if IsDigit(l.ch) {
-			// Assign Col/Row/File values
 			tok.ColumnNumber = l.currentColumn
 			tok.RowNumber = l.currentRow
 			tok.Filename = l.currentFile
@@ -105,10 +144,14 @@ func (l *Lexer) NextToken() token.Token {
 			return tok
 		} else {
 			// Else return illegal character
-			tok = NewToken(token.ILLEGAL, l.ch, l.currentColumn, l.currentColumn, l.currentFile)
+			tok = NewToken(token.ILLEGAL, l.ch)
 		}
-
 	}
+
+	// Set Col/Row Numbers
+	tok.ColumnNumber = l.currentColumn
+	tok.RowNumber = l.currentRow
+	tok.Filename = l.currentFile
 
 	// Advance Pointer
 	l.ReadChar()
@@ -117,13 +160,10 @@ func (l *Lexer) NextToken() token.Token {
 }
 
 // Create a new Token
-func NewToken(tokenType token.TokenType, ch rune, rowNumber int64, columnNumber int64, filename string) token.Token {
+func NewToken(tokenType token.TokenType, ch rune) token.Token {
 	return token.Token{
-		Type:         tokenType,
-		Literal:      string(ch),
-		RowNumber:    rowNumber,
-		ColumnNumber: columnNumber,
-		Filename:     filename,
+		Type:    tokenType,
+		Literal: string(ch),
 	}
 }
 
@@ -154,6 +194,7 @@ func (l *Lexer) SkipWhitespace() {
 	}
 }
 
+// Read an integer number and advance the pointer
 func (l *Lexer) ReadNumber() string {
 	// Cache Position
 	position := l.position
@@ -170,4 +211,13 @@ func (l *Lexer) ReadNumber() string {
 // If a rune is a numeric number
 func IsDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+// Peek the next character and NOT advance the pointer
+func (l *Lexer) PeekChar() rune {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return rune(l.input[l.readPosition])
+	}
 }
