@@ -25,7 +25,9 @@ if (5 < 10) {
 }
 
 10 == 10;
-10 != 9;`
+10 != 9;
+10 >= 1;
+1 <= 10;`
 
 	// What the Parser/Lexer should return
 	tests := []struct {
@@ -110,6 +112,16 @@ if (5 < 10) {
 		{token.INT, "10", 10, 11},
 		{token.NOT_EQ, "!=", 10, 11},
 		{token.INT, "9", 10, 11},
+		{token.SEMICOLON, ";", 10, 11},
+
+		{token.INT, "10", 10, 11},
+		{token.GE, ">=", 10, 11},
+		{token.INT, "1", 10, 11},
+		{token.SEMICOLON, ";", 10, 11},
+
+		{token.INT, "1", 10, 11},
+		{token.LE, "<=", 10, 11},
+		{token.INT, "10", 10, 11},
 		{token.SEMICOLON, ";", 10, 11},
 
 		{token.EOF, "\x00", 10, 12},

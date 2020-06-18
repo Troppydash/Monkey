@@ -102,10 +102,29 @@ func (l *Lexer) NextToken() token.Token {
 			tok = NewToken(token.BANG, l.ch)
 		}
 	case '<':
-		tok = NewToken(token.LT, l.ch)
-	case '>':
-		tok = NewToken(token.GT, l.ch)
+		if l.PeekChar() == '=' {
+			ch := l.ch
 
+			tok = NewToken(token.LE, 0)
+
+			l.ReadChar()
+
+			tok.Literal = string(ch) + string(l.ch)
+		} else {
+			tok = NewToken(token.LT, l.ch)
+		}
+	case '>':
+		if l.PeekChar() == '=' {
+			ch := l.ch
+
+			tok = NewToken(token.GE, 0)
+
+			l.ReadChar()
+
+			tok.Literal = string(ch) + string(l.ch)
+		} else {
+			tok = NewToken(token.GT, l.ch)
+		}
 	case ';':
 		tok = NewToken(token.SEMICOLON, l.ch)
 	case '(':
