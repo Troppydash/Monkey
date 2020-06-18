@@ -70,6 +70,8 @@ func (p *Parser) ParseStatement() ast.Statement {
 	switch p.currentToken.Type {
 	case token.LET:
 		return p.ParseLetStatement()
+	case token.RETURN:
+		return p.ParseReturnStatement()
 	default:
 		return nil
 	}
@@ -96,7 +98,7 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 	}
 
 	// TODO: we are skipping the expression parsing for now
-	for !p.currentTokenIs(token.SEMICOLON) {
+	for !p.CurrentTokenIs(token.SEMICOLON) {
 		p.NextToken()
 	}
 
@@ -104,7 +106,7 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 }
 
 // Check if current token is a certain type
-func (p *Parser) currentTokenIs(t token.TokenType) bool {
+func (p *Parser) CurrentTokenIs(t token.TokenType) bool {
 	return p.currentToken.Type == t
 }
 
@@ -141,4 +143,18 @@ func (p *Parser) PeekError(t token.TokenType) {
 		ColumnNumber: p.peekToken.ColumnNumber,
 	}
 	p.errors = append(p.errors, parseError)
+}
+
+// Pass a return statement
+func (p *Parser) ParseReturnStatement() *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.currentToken}
+
+	p.NextToken()
+
+	// TODO: Skipping the expressions for now
+	for !p.CurrentTokenIs(token.SEMICOLON) {
+		p.NextToken()
+	}
+
+	return stmt
 }
