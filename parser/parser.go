@@ -5,6 +5,18 @@ import (
 	"Monkey/lexer"
 	"Monkey/token"
 	"fmt"
+	"strconv"
+)
+
+// Expression Parsing Precedences
+const (
+	_ int = iota
+	LOWEST
+	COMPARE // == or > or < or <= or >= or !=
+	SUM     // + or -
+	PRODUCT // * or /
+	PREFIX  // !X or -X
+	CALL    // foobar()
 )
 
 // An error struct
@@ -23,6 +35,10 @@ type Parser struct {
 	currentToken token.Token
 	peekToken    token.Token
 
+	// Pratt Maps
+	prefixParseFns map[token.TokenType]PrefixParseFn
+	infixParseFns  map[token.TokenType]InfixParseFn
+
 	// This is an array of pointers
 	errors []*ParseError
 }
@@ -35,7 +51,22 @@ func New(l *lexer.Lexer) *Parser {
 	p.NextToken()
 	p.NextToken()
 
+	// Setup Pratt Parsing Functions
+	p.prefixParseFns = make(map[token.TokenType]PrefixParseFn)
+	p.RegisterPrefix(token.IDENT, p.ParseIdentifier)
+	p.RegisterPrefix(token.INT, p.ParseIntegerLiteral)
+
 	return p
+}
+
+// Register a prefix fn by adding it to the hashmap
+func (p *Parser) RegisterPrefix(tokenType token.TokenType, fn PrefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+// Register an infix fn by adding it to the hashmap
+func (p *Parser) RegisterInfix(tokenType token.TokenType, fn InfixParseFn) {
+	p.infixParseFns[tokenType] = fn
 }
 
 // Advance the pointer by reading the next token from the lexer
@@ -69,11 +100,14 @@ func (p *Parser) ParseStatement() ast.Statement {
 	// Switch on the token type
 	switch p.currentToken.Type {
 	case token.LET:
+		// Hand it over to parse let
 		return p.ParseLetStatement()
 	case token.RETURN:
+		// Hand it over to parse return
 		return p.ParseReturnStatement()
 	default:
-		return nil
+		// Hand it over to parse expression
+		return p.ParseExpressionStatement()
 	}
 }
 
@@ -136,16 +170,10 @@ func (p *Parser) PeekError(t token.TokenType) {
 	message := fmt.Sprintf("expected next token to be %s, got %s instead",
 		t, p.peekToken.Type)
 
-	parseError := &ParseError{
-		Message:      message,
-		Filename:     p.peekToken.Filename,
-		RowNumber:    p.peekToken.RowNumber,
-		ColumnNumber: p.peekToken.ColumnNumber,
-	}
-	p.errors = append(p.errors, parseError)
+	p.GenerateErrorForToken(message, &p.peekToken)
 }
 
-// Pass a return statement
+// Parse a return statement
 func (p *Parser) ParseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.currentToken}
 
@@ -157,4 +185,73 @@ func (p *Parser) ParseReturnStatement() *ast.ReturnStatement {
 	}
 
 	return stmt
+}
+
+// Parse a expressionStatement
+func (p *Parser) ParseExpressionStatement() *ast.ExpressionStatement {
+	// Allocate Memory
+	stmt := &ast.ExpressionStatement{Token: p.currentToken}
+
+	// Parse Expression
+	stmt.Expression = p.ParseExpression(LOWEST)
+
+	// Advance through ; if exists
+	if p.PeekTokenIs(token.SEMICOLON) {
+		// TODO: Print if ;
+		p.NextToken()
+	}
+
+	return stmt
+}
+
+// Parse an expression
+func (p *Parser) ParseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.currentToken.Type]
+	if prefix == nil {
+		return nil
+	}
+	leftExpression := prefix()
+	return leftExpression
+}
+
+// Generate Error for a token
+func (p *Parser) GenerateErrorForToken(message string, token *token.Token) {
+	err := &ParseError{
+		Message:      message,
+		Filename:     token.Filename,
+		RowNumber:    token.RowNumber,
+		ColumnNumber: token.RowNumber,
+	}
+	p.errors = append(p.errors, err)
+}
+
+// Pratt Parser Function Types
+type (
+	PrefixParseFn func() ast.Expression
+	InfixParseFn  func(ast.Expression) ast.Expression
+)
+
+// Pratt Parser Functions //
+
+// Parse Identifier
+func (p *Parser) ParseIdentifier() ast.Expression {
+	return &ast.Identifier{
+		Token: p.currentToken,
+		Value: p.currentToken.Literal,
+	}
+}
+
+// Parse Literal
+func (p *Parser) ParseIntegerLiteral() ast.Expression {
+	lit := &ast.IntegerLiteral{Token: p.currentToken}
+
+	value, err := strconv.ParseInt(p.currentToken.Literal, 0, 64)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as integer", p.currentToken.Literal)
+		p.GenerateErrorForToken(msg, &p.currentToken)
+		return nil
+	}
+
+	lit.Value = value
+	return lit
 }

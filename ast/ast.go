@@ -128,3 +128,17 @@ func (es *ExpressionStatement) ToString() string {
 	}
 	return ""
 }
+
+// An expression Literal
+type IntegerLiteral struct {
+	Token token.Token
+	Value int64
+}
+
+func (il *IntegerLiteral) ExpressionNode() {}
+func (il *IntegerLiteral) TokenLiteral() string {
+	return il.Token.Literal
+}
+func (il *IntegerLiteral) ToString() string {
+	return string(il.Value)
+}
