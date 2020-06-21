@@ -55,6 +55,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]PrefixParseFn)
 	p.RegisterPrefix(token.IDENT, p.ParseIdentifier)
 	p.RegisterPrefix(token.INT, p.ParseIntegerLiteral)
+	p.RegisterPrefix(token.BANG, p.ParsePrefixExpression)
+	p.RegisterPrefix(token.MINUS, p.ParsePrefixExpression)
 
 	return p
 }
@@ -208,9 +210,11 @@ func (p *Parser) ParseExpressionStatement() *ast.ExpressionStatement {
 func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.currentToken.Type]
 	if prefix == nil {
+		p.NoPrefixParseFnError(p.currentToken)
 		return nil
 	}
 	leftExpression := prefix()
+
 	return leftExpression
 }
 
@@ -223,6 +227,12 @@ func (p *Parser) GenerateErrorForToken(message string, token *token.Token) {
 		ColumnNumber: token.RowNumber,
 	}
 	p.errors = append(p.errors, err)
+}
+
+// Error when can't find any available prefix parse functions
+func (p *Parser) NoPrefixParseFnError(token token.Token) {
+	msg := fmt.Sprintf("no prefix parse function for %s found", token.Type)
+	p.GenerateErrorForToken(msg, &token)
 }
 
 // Pratt Parser Function Types
@@ -254,4 +264,18 @@ func (p *Parser) ParseIntegerLiteral() ast.Expression {
 
 	lit.Value = value
 	return lit
+}
+
+// Parses Prefix
+func (p *Parser) ParsePrefixExpression() ast.Expression {
+	expression := &ast.PrefixExpression{
+		Token:    p.currentToken,
+		Operator: p.currentToken.Literal,
+	}
+
+	p.NextToken()
+
+	expression.Right = p.ParseExpression(PREFIX)
+
+	return expression
 }

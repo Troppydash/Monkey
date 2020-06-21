@@ -3,8 +3,75 @@ package parser
 import (
 	"Monkey/ast"
 	"Monkey/lexer"
+	"fmt"
 	"testing"
 )
+
+// Test parsing of prefix
+func TestParsingPrefixExpressions(t *testing.T) {
+	prefixTests := []struct {
+		input        string
+		operator     string
+		integerValue int64
+	}{
+		{"!5", "!", 5},
+		{"-15", "-", 15},
+	}
+
+	for _, tt := range prefixTests {
+		l := lexer.New(tt.input, "testPrefix")
+		p := New(l)
+		program := p.ParseProgram()
+		p.CheckParserErrors(t)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain %d statements. got=%d",
+				1, len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not type ast.ExpressionStatement. got=%T",
+				program.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.PrefixExpression)
+		if !ok {
+			t.Fatalf("stmt is not type ast.PrefixExpression. got=%T",
+				stmt.Expression)
+		}
+		if exp.Operator != tt.operator {
+			t.Fatalf("exp.Operator is not %q. got=%q",
+				tt.operator, exp.Operator)
+		}
+
+		if !CheckIntegerLiteral(t, exp.Right, tt.integerValue) {
+			return
+		}
+	}
+}
+
+func CheckIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
+	integ, ok := il.(*ast.IntegerLiteral)
+	if !ok {
+		t.Errorf("il not type *ast.IntegerLiteral. got=%T", il)
+		return false
+	}
+
+	if integ.Value != value {
+		t.Errorf("integ.Value not %d. got=%d",
+			value, integ.Value)
+		return false
+	}
+
+	if integ.TokenLiteral() != fmt.Sprintf("%d", value) {
+		t.Errorf("integ.TokenLiteral not %d. got=%s",
+			value, integ.TokenLiteral())
+		return false
+	}
+
+	return true
+}
 
 // Test parsing of literals
 func TestIntegerLiteralExpression(t *testing.T) {
@@ -13,7 +80,7 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	l := lexer.New(input, "testLiteral")
 	p := New(l)
 	program := p.ParseProgram()
-	CheckParserErrors(t, p)
+	p.CheckParserErrors(t)
 
 	if len(program.Statements) != 1 {
 		t.Fatalf("program has not enough statments. got=%d",
@@ -48,7 +115,7 @@ func TestIdentifierExpression(t *testing.T) {
 	l := lexer.New(input, "testIdentifier")
 	p := New(l)
 	program := p.ParseProgram()
-	CheckParserErrors(t, p)
+	p.CheckParserErrors(t)
 
 	if len(program.Statements) != 1 {
 		t.Fatalf("program has not enough statements. got=%d",
@@ -88,7 +155,7 @@ return 921391;`
 	p := New(l)
 
 	program := p.ParseProgram()
-	CheckParserErrors(t, p)
+	p.CheckParserErrors(t)
 
 	if len(program.Statements) != 3 {
 		t.Fatalf("program.Statements does not contian 3 statements. got=%d",
@@ -119,7 +186,7 @@ let foobar = 848484;`
 	p := New(l)
 
 	program := p.ParseProgram()
-	CheckParserErrors(t, p)
+	p.CheckParserErrors(t)
 	if program == nil {
 		t.Fatalf("ParseProgram returned nil")
 	}
@@ -181,7 +248,7 @@ func CheckLetStatement(t *testing.T, s ast.Statement, name string) bool {
 }
 
 // Verify that there are no errors
-func CheckParserErrors(t *testing.T, p *Parser) {
+func (p *Parser) CheckParserErrors(t *testing.T) {
 	errors := p.Errors()
 
 	// Return if errors is empty
