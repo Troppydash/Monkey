@@ -12,12 +12,43 @@ import (
 const (
 	_ int = iota
 	LOWEST
-	COMPARE // == or > or < or <= or >= or !=
+	EQUAL   // == or !=
+	COMPARE // > or < or <= or >=
 	SUM     // + or -
 	PRODUCT // * or /
 	PREFIX  // !X or -X
 	CALL    // foobar()
 )
+
+// A Map Contains a Token to Precedences key value pair
+var precedences = map[token.TokenType]int{
+	token.EQ:       EQUAL,
+	token.NOT_EQ:   EQUAL,
+	token.LE:       COMPARE,
+	token.GE:       COMPARE,
+	token.GT:       COMPARE,
+	token.LT:       COMPARE,
+	token.PLUS:     SUM,
+	token.MINUS:    SUM,
+	token.SLASH:    PRODUCT,
+	token.ASTERISK: PRODUCT,
+}
+
+// Peek the precedence of the next token in the parser
+func (p *Parser) PeekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+
+// Gets the precedences of the current token in the parser
+func (p *Parser) CurrentPrecedence() int {
+	if p, ok := precedences[p.currentToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
 
 // An error struct
 type ParseError struct {
@@ -52,11 +83,27 @@ func New(l *lexer.Lexer) *Parser {
 	p.NextToken()
 
 	// Setup Pratt Parsing Functions
+
+	// Setup Prefix Functions
 	p.prefixParseFns = make(map[token.TokenType]PrefixParseFn)
 	p.RegisterPrefix(token.IDENT, p.ParseIdentifier)
 	p.RegisterPrefix(token.INT, p.ParseIntegerLiteral)
 	p.RegisterPrefix(token.BANG, p.ParsePrefixExpression)
 	p.RegisterPrefix(token.MINUS, p.ParsePrefixExpression)
+	p.RegisterPrefix(token.PLUS, p.ParsePrefixExpression)
+
+	// Setup Infix Functions
+	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
+	p.RegisterInfix(token.PLUS, p.ParseInfixExpression)
+	p.RegisterInfix(token.MINUS, p.ParseInfixExpression)
+	p.RegisterInfix(token.SLASH, p.ParseInfixExpression)
+	p.RegisterInfix(token.ASTERISK, p.ParseInfixExpression)
+	p.RegisterInfix(token.EQ, p.ParseInfixExpression)
+	p.RegisterInfix(token.NOT_EQ, p.ParseInfixExpression)
+	p.RegisterInfix(token.GT, p.ParseInfixExpression)
+	p.RegisterInfix(token.LT, p.ParseInfixExpression)
+	p.RegisterInfix(token.GE, p.ParseInfixExpression)
+	p.RegisterInfix(token.LE, p.ParseInfixExpression)
 
 	return p
 }
@@ -215,6 +262,15 @@ func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	}
 	leftExpression := prefix()
 
+	for !p.PeekTokenIs(token.SEMICOLON) && precedence < p.PeekPrecedence() {
+		infix := p.infixParseFns[p.peekToken.Type]
+		if infix == nil {
+			return leftExpression
+		}
+
+		p.NextToken()
+		leftExpression = infix(leftExpression)
+	}
 	return leftExpression
 }
 
@@ -276,6 +332,23 @@ func (p *Parser) ParsePrefixExpression() ast.Expression {
 	p.NextToken()
 
 	expression.Right = p.ParseExpression(PREFIX)
+
+	return expression
+}
+
+// Parses Infix
+func (p *Parser) ParseInfixExpression(left ast.Expression) ast.Expression {
+	expression := &ast.InfixExpression{
+		Token:    p.currentToken,
+		Operator: p.currentToken.Literal,
+		Left:     left,
+	}
+
+	// Gets the Precedence of the operator
+	prec := p.CurrentPrecedence()
+	// Advance to the right expression
+	p.NextToken()
+	expression.Right = p.ParseExpression(prec)
 
 	return expression
 }

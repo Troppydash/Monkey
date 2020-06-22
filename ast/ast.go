@@ -140,7 +140,7 @@ func (il *IntegerLiteral) TokenLiteral() string {
 	return il.Token.Literal
 }
 func (il *IntegerLiteral) ToString() string {
-	return string(il.Value)
+	return il.Token.Literal
 }
 
 // An expression prefix
@@ -160,6 +160,29 @@ func (pe *PrefixExpression) ToString() string {
 	out.WriteString("(")
 	out.WriteString(pe.Operator)
 	out.WriteString(pe.Right.ToString())
+	out.WriteString(")")
+
+	return out.String()
+}
+
+type InfixExpression struct {
+	Token    token.Token
+	Operator string
+	Left     Expression
+	Right    Expression
+}
+
+func (ie *InfixExpression) ExpressionNode() {}
+func (ie *InfixExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+func (ie *InfixExpression) ToString() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.ToString())
+	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Right.ToString())
 	out.WriteString(")")
 
 	return out.String()

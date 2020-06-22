@@ -7,6 +7,115 @@ import (
 	"testing"
 )
 
+// Testing parsing precedence expression
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	// Test Cases
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"-a * b", "((-a) * b)"},
+		{"!+a", "(!(+a))"},
+		{"1 + 1 * 1", "(1 + (1 * 1))"},
+		{
+			"a + b * c + d / e - f",
+			"(((a + (b * c)) + (d / e)) - f)",
+		},
+		{
+			"3 + 4; -5 * 5",
+			"(3 + 4)((-5) * 5)",
+		},
+		{
+			"5 > 4 == 3 < 4",
+			"((5 > 4) == (3 < 4))",
+		},
+		{
+			"5 < 4 != 3 > 4",
+			"((5 < 4) != (3 > 4))",
+		},
+		{
+			"3 + 4 * 5 == 3 * 1 + 4 * 5",
+			"((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+		},
+		{
+			"3 + 4 * 5 == 3 * 1 + 4 * 5",
+			"((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+		},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input, "testPrecedence")
+		p := New(l)
+		program := p.ParseProgram()
+		p.CheckParserErrors(t)
+
+		actual := program.ToString()
+
+		if actual != tt.expected {
+			t.Errorf("expected=%q. got=%q",
+				tt.expected, actual)
+		}
+	}
+}
+
+// Test parsing of infix expressions
+func TestParsingInfixExpressions(t *testing.T) {
+	infixTests := []struct {
+		input      string
+		leftValue  int64
+		operator   string
+		rightValue int64
+	}{
+		{"5 + 5", 5, "+", 5},
+		{"5 - 5", 5, "-", 5},
+		{"5 * 5", 5, "*", 5},
+		{"5 / 5", 5, "/", 5},
+		{"5 > 5", 5, ">", 5},
+		{"5 < 5", 5, "<", 5},
+		{"5 >= 5", 5, ">=", 5},
+		{"5 <= 5", 5, "<=", 5},
+		{"5 == 5", 5, "==", 5},
+		{"5 != 5", 5, "!=", 5},
+	}
+
+	for _, tt := range infixTests {
+		l := lexer.New(tt.input, "testInfix")
+		p := New(l)
+		program := p.ParseProgram()
+		p.CheckParserErrors(t)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain %d statements. got=%d",
+				1, len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not type *ast.ExpressionStatement. got=%T",
+				program.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.InfixExpression)
+		if !ok {
+			t.Fatalf("exp is not ast.InfixExpression. got=%T",
+				stmt.Expression)
+		}
+
+		if !CheckIntegerLiteral(t, exp.Left, tt.leftValue) {
+			return
+		}
+
+		if exp.Operator != tt.operator {
+			t.Fatalf("exp.Operator is not %q. got=%s",
+				tt.operator, exp.Operator)
+		}
+
+		if !CheckIntegerLiteral(t, exp.Right, tt.rightValue) {
+			return
+		}
+	}
+}
+
 // Test parsing of prefix
 func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
@@ -16,6 +125,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 	}{
 		{"!5", "!", 5},
 		{"-15", "-", 15},
+		{"+15", "+", 15},
 	}
 
 	for _, tt := range prefixTests {
