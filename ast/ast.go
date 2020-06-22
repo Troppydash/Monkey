@@ -187,3 +187,17 @@ func (ie *InfixExpression) ToString() string {
 
 	return out.String()
 }
+
+// Boolean Type
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+func (b *Boolean) ExpressionNode() {}
+func (b *Boolean) TokenLiteral() string {
+	return b.Token.Literal
+}
+func (b *Boolean) ToString() string {
+	return b.Token.Literal
+}
