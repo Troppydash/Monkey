@@ -7,12 +7,144 @@ import (
 	"testing"
 )
 
-func TestIfIfElseElseExpression(t *testing.T) {
+func TestFunctionLiteralParsing(t *testing.T) {
+	input := `fn(x, y) { x + y; }`
+
+	l := lexer.New(input, "testFunction")
+	p := New(l)
+	program := p.ParseProgram()
+	p.CheckParserErrors(t)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain enough statements. got=%d",
+			len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not type *ast.ExpressinStatement. got=%T",
+			program.Statements[0])
+	}
+
+	function, ok := stmt.Expression.(*ast.FunctionLiteral)
+	if !ok {
+		t.Fatalf("stmt.Expression is not type *ast.FunctionLiteral. got=%T",
+			stmt.Expression)
+	}
+
+	if len(function.Parameters) != 2 {
+		t.Fatalf("function literal paramters wrong. expected 2, got=%d",
+			len(function.Parameters))
+	}
+
+	CheckLiteralExpression(t, function.Parameters[0], "x")
+	CheckLiteralExpression(t, function.Parameters[1], "y")
+
+	if len(function.Body.Statements) != 1 {
+		t.Fatalf("function.Body.Statements has not 1 statement. got=%d",
+			len(function.Body.Statements))
+	}
+
+	bodyStmt, ok := function.Body.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("function.Body.Statements[0] is not type *ast.ExpressionStatement. got=%T",
+			function.Body.Statements[0])
+	}
+
+	CheckInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+}
+
+// Test If else if else Expression
+func TestIfElseIfElseExpression(t *testing.T) {
 	input := `
 if x < y {
     x
-}`
+} else if y == z {
+	y
+} else {
+	14
+}
+`
 
+	l := lexer.New(input, "testIfElseIfElse")
+	p := New(l)
+	program := p.ParseProgram()
+	p.CheckParserErrors(t)
+
+	// Check more
+	if len(program.Statements) != 1 {
+		t.Errorf("program.Statements does not contain enough statements. got=%d",
+			len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not type *ast.ExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+
+	exp, ok := stmt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not type *ast.IfExpression. got=%T",
+			stmt.Expression)
+	}
+
+	if !CheckInfixExpression(t, exp.Condition, "x", "<", "y") {
+		return
+	}
+
+	if len(exp.Consequence.Statements) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d",
+			len(exp.Consequence.Statements))
+	}
+
+	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not type *ast.ExpressionStatement. got=%T",
+			exp.Consequence.Statements[0])
+	}
+
+	if !CheckIdentifier(t, consequence.Expression, "x") {
+		return
+	}
+
+	// Else Statement
+	alt, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("alternative statement is not type *ast.ExpressionStatement. got=%T",
+			exp.Alternative.Statements[0])
+	}
+
+	elseStmt, ok := alt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("alternative statement is not type *ast.IfExpression. got=%T",
+			alt.Expression)
+	}
+
+	if !CheckInfixExpression(t, elseStmt.Condition, "y", "==", "z") {
+		return
+	}
+
+	consequence, ok = elseStmt.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("elseStatements[0] is not type *ast.ExpressionStatement. got=%T",
+			elseStmt.Consequence.Statements[0])
+	}
+
+	if !CheckIdentifier(t, consequence.Expression, "y") {
+		return
+	}
+
+	// Else Statement
+	alt, ok = elseStmt.Alternative.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("alternative statement is not type *ast.ExpressionStatement. got=%T",
+			exp.Alternative.Statements[0])
+	}
+
+	if !CheckIntegerLiteral(t, alt.Expression, 14) {
+		return
+	}
 
 }
 
@@ -93,7 +225,6 @@ if x < y {
 	if !CheckIdentifier(t, consequence.Expression, "y") {
 		return
 	}
-
 
 }
 

@@ -98,6 +98,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.LPAREN, p.parseGroupedExpression)
 
 	p.RegisterPrefix(token.IF, p.ParseIfExpression)
+	p.RegisterPrefix(token.FUNCTION, p.ParseFunctionLiteral)
 
 	// Setup Infix Functions
 	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
@@ -409,19 +410,20 @@ func (p *Parser) ParseIfExpression() ast.Expression {
 		p.NextToken()
 
 		if p.PeekTokenIs(token.IF) {
+			// Parse else if
 			p.NextToken()
 			block := &ast.BlockStatement{
-				Token:      p.peekToken,
-				Statements: []ast.Statement{},
+				Token: p.peekToken,
+				Statements: []ast.Statement{
+					&ast.ExpressionStatement{
+						Token:      p.peekToken,
+						Expression: p.ParseIfExpression(),
+					},
+				},
 			}
-			exp := p.ParseIfExpression()
-			stmt := &ast.ExpressionStatement{
-				Token:      p.peekToken,
-				Expression: exp,
-			}
-			block.Statements = append(block.Statements, stmt)
 			expression.Alternative = block
 		} else {
+			// Parse else
 			if !p.ExpectPeek(token.LBRACE) {
 				return nil
 			}
@@ -449,4 +451,29 @@ func (p *Parser) ParseBlockStatement() *ast.BlockStatement {
 		p.NextToken()
 	}
 	return block
+}
+
+// Parse a function expression
+func (p *Parser) ParseFunctionLiteral() ast.Expression {
+	fnLit := &ast.FunctionLiteral{Token: p.currentToken}
+
+	// Check (
+	if !p.ExpectPeek(token.LPAREN) {
+		return nil
+	}
+
+	fnLit.Parameters = p.ParseFunctionParameters()
+
+	// Check {
+	if !p.ExpectPeek(token.LBRACE) {
+		return nil
+	}
+
+	fnLit.Body = p.ParseBlockStatement()
+	return fnLit
+}
+
+// TODO: Finish this
+func (p *Parser) ParseFunctionParameters() []*ast.Identifier {
+	return nil
 }
