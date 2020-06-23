@@ -3,6 +3,7 @@ package ast
 import (
 	"Monkey/token"
 	"bytes"
+	"strings"
 )
 
 // Root Node
@@ -200,4 +201,51 @@ func (b *Boolean) TokenLiteral() string {
 }
 func (b *Boolean) ToString() string {
 	return b.Token.Literal
+}
+
+// A Group/Block of statements
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Statement
+}
+
+func (bs *BlockStatement) StatementNode() {}
+func (bs *BlockStatement) TokenLiteral() string {
+	return bs.Token.Literal
+}
+func (bs *BlockStatement) ToString() string {
+	var out strings.Builder
+	for _, s := range bs.Statements {
+		out.WriteString(s.ToString())
+	}
+	return out.String()
+}
+
+// An if(else) expression
+type IfExpression struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (ie *IfExpression) ExpressionNode() {}
+func (ie *IfExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+func (ie *IfExpression) ToString() string {
+	// TODO: Replace all occurence of this
+	var out strings.Builder
+
+	out.WriteString("if")
+	out.WriteString(ie.Condition.ToString())
+	out.WriteString(" ")
+	out.WriteString(ie.Consequence.ToString())
+
+	if ie.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(ie.Alternative.ToString())
+	}
+
+	return out.String()
 }

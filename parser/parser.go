@@ -97,6 +97,8 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.RegisterPrefix(token.LPAREN, p.parseGroupedExpression)
 
+	p.RegisterPrefix(token.IF, p.ParseIfExpression)
+
 	// Setup Infix Functions
 	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
 	p.RegisterInfix(token.PLUS, p.ParseInfixExpression)
@@ -376,4 +378,75 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	}
 
 	return exp
+}
+
+// Parse if expression
+func (p *Parser) ParseIfExpression() ast.Expression {
+	expression := &ast.IfExpression{Token: p.currentToken}
+
+	//if !p.ExpectPeek(token.LPAREN) {
+	//	return nil
+	//}
+
+	// Advance pass the if token
+	p.NextToken()
+
+	expression.Condition = p.ParseExpression(LOWEST)
+
+	//if !p.ExpectPeek(token.RPAREN) {
+	//	return nil
+	//}
+
+	if !p.ExpectPeek(token.LBRACE) {
+		return nil
+	}
+
+	// Parse then case
+	expression.Consequence = p.ParseBlockStatement()
+
+	// Parse else case
+	if p.PeekTokenIs(token.ELSE) {
+		p.NextToken()
+
+		if p.PeekTokenIs(token.IF) {
+			p.NextToken()
+			block := &ast.BlockStatement{
+				Token:      p.peekToken,
+				Statements: []ast.Statement{},
+			}
+			exp := p.ParseIfExpression()
+			stmt := &ast.ExpressionStatement{
+				Token:      p.peekToken,
+				Expression: exp,
+			}
+			block.Statements = append(block.Statements, stmt)
+			expression.Alternative = block
+		} else {
+			if !p.ExpectPeek(token.LBRACE) {
+				return nil
+			}
+			expression.Alternative = p.ParseBlockStatement()
+		}
+
+	}
+
+	return expression
+}
+
+// Parse a block statement
+func (p *Parser) ParseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{Token: p.currentToken}
+	block.Statements = []ast.Statement{}
+
+	// Advance pass the curly brace token
+	p.NextToken()
+
+	for !p.CurrentTokenIs(token.RBRACE) && !p.CurrentTokenIs(token.EOF) {
+		stmt := p.ParseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		p.NextToken()
+	}
+	return block
 }
