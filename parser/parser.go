@@ -473,7 +473,47 @@ func (p *Parser) ParseFunctionLiteral() ast.Expression {
 	return fnLit
 }
 
-// TODO: Finish this
+// Parse the parameter list in a function
 func (p *Parser) ParseFunctionParameters() []*ast.Identifier {
-	return nil
+	var identifiers []*ast.Identifier
+
+	// If parameter list is empty
+	if p.PeekTokenIs(token.RPAREN) {
+		p.NextToken()
+		return identifiers
+	}
+
+	// Advance to the first identifier
+	p.NextToken()
+
+	// Parse the first identifier
+	ident := &ast.Identifier{
+		Token: p.currentToken,
+		Value: p.currentToken.Literal,
+	}
+	identifiers = append(identifiers, ident)
+
+	// Parse the rest of identifiers
+	for p.PeekTokenIs(token.COMMA) {
+		// Advance to next Identifier
+		p.NextToken()
+		// Trailing Comma
+		if p.PeekTokenIs(token.RPAREN) {
+			break
+		}
+		p.NextToken()
+
+		ident := &ast.Identifier{
+			Token: p.currentToken,
+			Value: p.currentToken.Literal,
+		}
+		identifiers = append(identifiers, ident)
+	}
+
+	// Check )
+	if !p.ExpectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return identifiers
 }

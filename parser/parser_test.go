@@ -7,8 +7,39 @@ import (
 	"testing"
 )
 
+func TestFunctionParameterParsing(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedParams []string
+	}{
+		{input: "fn() {};", expectedParams: []string{}},
+		{input: "fn(x,) {};", expectedParams: []string{"x"}},
+		{input: "fn(x, y, z,) {};", expectedParams: []string{"x", "y", "z"}},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input, "testFunctionParam")
+		p := New(l)
+		program := p.ParseProgram()
+		p.CheckParserErrors(t)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		function := stmt.Expression.(*ast.FunctionLiteral)
+
+		if len(function.Parameters) != len(tt.expectedParams) {
+			t.Errorf("parameters length wrong. expected=%d, got=%d",
+				len(tt.expectedParams), len(function.Parameters))
+		}
+
+		for i, ident := range tt.expectedParams {
+			CheckLiteralExpression(t, function.Parameters[i], ident)
+		}
+	}
+}
+
+// Test Parsing a function
 func TestFunctionLiteralParsing(t *testing.T) {
-	input := `fn(x, y) { x + y; }`
+	input := `fn(x, y) { x + y; };`
 
 	l := lexer.New(input, "testFunction")
 	p := New(l)
