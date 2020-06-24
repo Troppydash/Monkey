@@ -668,7 +668,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 func CheckIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 	integ, ok := il.(*ast.IntegerLiteral)
 	if !ok {
-		t.Errorf("il not type *ast.IntegerLiteral. got=%T", il)
+		t.Errorf("expression not type *ast.IntegerLiteral. got=%T", il)
 		return false
 	}
 
@@ -841,7 +841,20 @@ func TestLetStatementsFully(t *testing.T) {
 		program := p.ParseProgram()
 		p.CheckParserErrors(t)
 
-		// TODO: Check Things
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statement. got=%d",
+				len(program.Statements))
+		}
+
+		stmt := program.Statements[0]
+		if !CheckLetStatement(t, stmt, tt.expectedIdentifier) {
+			return
+		}
+
+		val := stmt.(*ast.LetStatement).Value
+		if !CheckLiteralExpression(t, val, tt.expectedValue) {
+			return
+		}
 	}
 }
 
@@ -912,11 +925,9 @@ func CheckLetStatement(t *testing.T, s ast.Statement, name string) bool {
 		return false
 	}
 
-	//TODO: Check value
-
 	return true
 }
-x
+
 // Verify that there are no errors
 func (p *Parser) CheckParserErrors(t *testing.T) {
 	errors := p.Errors()

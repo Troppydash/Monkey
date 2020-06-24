@@ -191,8 +191,11 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	// TODO: we are skipping the expression parsing for now
-	for !p.CurrentTokenIs(token.SEMICOLON) {
+	p.NextToken()
+
+	stmt.Value = p.ParseExpression(LOWEST)
+
+	if p.PeekTokenIs(token.SEMICOLON) {
 		p.NextToken()
 	}
 
@@ -239,8 +242,9 @@ func (p *Parser) ParseReturnStatement() *ast.ReturnStatement {
 
 	p.NextToken()
 
-	// TODO: Skipping the expressions for now
-	for !p.CurrentTokenIs(token.SEMICOLON) {
+	stmt.ReturnValue = p.ParseExpression(LOWEST)
+
+	if p.PeekTokenIs(token.SEMICOLON) {
 		p.NextToken()
 	}
 
@@ -257,6 +261,7 @@ func (p *Parser) ParseExpressionStatement() *ast.ExpressionStatement {
 
 	// Advance through ; if exists
 	if p.PeekTokenIs(token.SEMICOLON) {
+		// Can prob wrap the expression into a new ast node
 		// TODO: Print if ;
 		p.NextToken()
 	}
