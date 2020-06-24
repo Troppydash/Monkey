@@ -2,7 +2,7 @@ package repl
 
 import (
 	"Monkey/lexer"
-	"Monkey/token"
+	"Monkey/parser"
 	"bufio"
 	"fmt"
 	"io"
@@ -10,6 +10,15 @@ import (
 
 // Console Prompt header
 const PROMPT = ">> "
+
+// Print parsing errors
+func PrintParserErrors(out io.Writer, errors []*parser.ParseError) {
+	for _, err := range errors {
+		message := fmt.Sprintf("On %d:%d, %s, in %q",
+			err.RowNumber, err.ColumnNumber, err.Message, err.Filename)
+		io.WriteString(out, message+"\n")
+	}
+}
 
 // Start the REPL by repeating asking for input
 func Start(in io.Reader, out io.Writer) {
@@ -31,10 +40,18 @@ func Start(in io.Reader, out io.Writer) {
 		line := scanner.Text()
 		// Create new lexer
 		l := lexer.New(line, "REPL")
+		// Create new parser
+		p := parser.New(l)
 
-		// Loop through all tokens, print them out
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%+v\n", tok)
+		// Parse Program
+		program := p.ParseProgram()
+		if p.HasError() {
+			PrintParserErrors(out, p.Errors())
+			continue
 		}
+
+		// Print the parsed program out
+		io.WriteString(out, program.ToString())
+		io.WriteString(out, "\n")
 	}
 }

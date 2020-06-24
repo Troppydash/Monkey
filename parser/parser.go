@@ -75,6 +75,11 @@ type Parser struct {
 	errors []*ParseError
 }
 
+// Check if parser have any error
+func (p *Parser) HasError() bool {
+	return len(p.errors) != 0
+}
+
 // Construct a new Parser
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{lexer: l, errors: []*ParseError{}}
@@ -278,6 +283,8 @@ func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	}
 	leftExpression := prefix()
 
+	// TODO: Make error here
+
 	for !p.PeekTokenIs(token.SEMICOLON) && precedence < p.PeekPrecedence() {
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
@@ -296,7 +303,7 @@ func (p *Parser) GenerateErrorForToken(message string, token *token.Token) {
 		Message:      message,
 		Filename:     token.Filename,
 		RowNumber:    token.RowNumber,
-		ColumnNumber: token.RowNumber,
+		ColumnNumber: token.ColumnNumber,
 	}
 	p.errors = append(p.errors, err)
 }
