@@ -236,7 +236,6 @@ func (ie *IfExpression) TokenLiteral() string {
 	return ie.Token.Literal
 }
 func (ie *IfExpression) ToString() string {
-	// TODO: Replace all occurence of this
 	var out strings.Builder
 
 	out.WriteString("if")
@@ -252,6 +251,7 @@ func (ie *IfExpression) ToString() string {
 	return out.String()
 }
 
+// Function Definition Expression
 type FunctionLiteral struct {
 	Token      token.Token     // Fn Token
 	Parameters []*Identifier   // List of Parameters
@@ -276,6 +276,33 @@ func (fl *FunctionLiteral) ToString() string {
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") ")
 	out.WriteString(fl.Body.ToString())
+
+	return out.String()
+}
+
+// Function Call Expression
+type CallExpression struct {
+	Token     token.Token  // ( Token
+	Function  Expression   // The target Function
+	Arguments []Expression // Argument list
+}
+
+func (ce *CallExpression) ExpressionNode() {}
+func (ce *CallExpression) TokenLiteral() string {
+	return ce.Token.Literal
+}
+func (ce *CallExpression) ToString() string {
+	var out strings.Builder
+
+	var args []string
+	for _, a := range ce.Arguments {
+		args = append(args, a.ToString())
+	}
+
+	out.WriteString(ce.Function.ToString())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
 
 	return out.String()
 }
