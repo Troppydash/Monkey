@@ -51,11 +51,16 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
+		io.WriteString(out, ">>Parsed ")
+		io.WriteString(out, program.ToString())
+		io.WriteString(out, "\n")
+
 		// Eval it
 		evaluated := evaluator.Eval(program)
 
 		// Print the parsed program out
 		if evaluated != nil {
+			io.WriteString(out, ">>Evaluated ")
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
 		}

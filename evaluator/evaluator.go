@@ -3,6 +3,7 @@ package evaluator
 import (
 	"Monkey/ast"
 	"Monkey/object"
+	"Monkey/token"
 	"fmt"
 )
 
@@ -30,11 +31,106 @@ func Eval(node ast.Node) object.Object {
 
 	case *ast.Boolean:
 		return NativeBoolToBooleanObject(node.Value)
+
+	case *ast.PrefixExpression:
+		right := Eval(node.Right)
+		return EvalPrefixExpression(node.Operator, right)
+
+	case *ast.InfixExpression:
+		// We need to short circuit AND or OR gates
+		return EvalInfixExpression(node)
 	}
 
 	return nil
 }
 
+// Eval Infix Expression
+func EvalInfixExpression(node *ast.InfixExpression) object.Object {
+	operator := node.Operator
+	left := Eval(node.Left)
+
+	if operator == token.AND || operator == token.OR {
+		// Implement Short Circuit
+		return NULL
+	}
+
+	right := Eval(node.Right)
+	switch {
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
+		return EvalIntegerInfixExpression(operator, left, right)
+	default:
+		return NULL
+	}
+}
+
+// Eval Integer Expression
+func EvalIntegerInfixExpression(operator string, left object.Object, right object.Object) object.Object {
+	leftVal := left.(*object.Integer).Value
+	rightVal := right.(*object.Integer).Value
+
+	switch operator {
+	case "+":
+		return &object.Integer{Value: leftVal + rightVal}
+	case "-":
+		return &object.Integer{Value: leftVal - rightVal}
+	case "*":
+		return &object.Integer{Value: leftVal * rightVal}
+	case "/":
+		return &object.Integer{Value: leftVal / rightVal}
+	default:
+		return NULL
+	}
+}
+
+// Eval a prefix expression
+func EvalPrefixExpression(operator string, right object.Object) object.Object {
+	switch operator {
+	case "!":
+		return EvalBangOperatorExpression(right)
+	case "-":
+		return EvalMinusPrefixOperatorExpression(right)
+	case "+":
+		return EvalPlusPrefixOperatorExpression(right)
+	default:
+		return NULL
+	}
+}
+
+// Eval + infix operator
+func EvalPlusPrefixOperatorExpression(right object.Object) object.Object {
+	if right.Type() != object.INTEGER_OBJ {
+		return NULL
+	}
+
+	return right
+}
+
+// Eval - infix operator
+func EvalMinusPrefixOperatorExpression(right object.Object) object.Object {
+	// Not Integer
+	if right.Type() != object.INTEGER_OBJ {
+		return NULL
+	}
+
+	value := right.(*object.Integer).Value
+	return &object.Integer{Value: -value}
+}
+
+// Eval the bang/invert operator
+func EvalBangOperatorExpression(right object.Object) object.Object {
+	switch right {
+	case NULL:
+		return TRUE
+	case FALSE:
+		return TRUE
+	case TRUE:
+		return FALSE
+	default:
+		return FALSE
+	}
+}
+
+// Converter a native type to boolean object
 func NativeBoolToBooleanObject(value bool) object.Object {
 	if value {
 		return TRUE

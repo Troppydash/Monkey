@@ -12,6 +12,7 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	GATE
 	EQUAL   // == or !=
 	COMPARE // > or < or <= or >=
 	SUM     // + or -
@@ -22,6 +23,8 @@ const (
 
 // A Map Contains a Token to Precedences key value pair
 var precedences = map[token.TokenType]int{
+	token.AND:      GATE,
+	token.OR:       GATE,
 	token.EQ:       EQUAL,
 	token.NOT_EQ:   EQUAL,
 	token.LE:       COMPARE,
@@ -97,6 +100,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.BANG, p.ParsePrefixExpression)
 	p.RegisterPrefix(token.MINUS, p.ParsePrefixExpression)
 	p.RegisterPrefix(token.PLUS, p.ParsePrefixExpression)
+	p.RegisterPrefix(token.AND, p.ParsePrefixExpression)
+	p.RegisterPrefix(token.OR, p.ParsePrefixExpression)
 
 	p.RegisterPrefix(token.TRUE, p.ParseBoolean)
 	p.RegisterPrefix(token.FALSE, p.ParseBoolean)
@@ -120,6 +125,9 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterInfix(token.LE, p.ParseInfixExpression)
 
 	p.RegisterInfix(token.LPAREN, p.ParseCallExpression)
+
+	p.RegisterInfix(token.AND, p.ParseInfixExpression)
+	p.RegisterInfix(token.OR, p.ParseInfixExpression)
 
 	return p
 }

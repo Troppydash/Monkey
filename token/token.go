@@ -44,6 +44,9 @@ const (
 	IF       = "IF"
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
+
+	AND = "AND"
+	OR  = "OR"
 )
 
 // The Type of a Token
@@ -68,6 +71,8 @@ var keywords = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,
+	"and":    AND,
+	"or":     OR,
 }
 
 // Return a TokenType from a plain string

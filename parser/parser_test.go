@@ -8,6 +8,7 @@ import (
 )
 
 // TODO: Write tests for the new printExpStmt node
+// TODO: Write tests for And and Or Gates
 
 // Test Function Call Parsing
 func TestCallExpressionParsing(t *testing.T) {
@@ -520,6 +521,14 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{
 			"add(a + b + c * d / f + g)",
 			"add((((a + b) + ((c * d) / f)) + g))",
+		},
+		{
+			"1 == 2 and 5 > 6",
+			"((1 == 2) and (5 > 6))",
+		},
+		{
+			"1 or 5 and 3 > 8",
+			"((1 or 5) and (3 > 8))",
 		},
 	}
 
