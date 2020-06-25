@@ -7,9 +7,11 @@ import (
 	"testing"
 )
 
+// TODO: Write tests for the new printExpStmt node
+
 // Test Function Call Parsing
 func TestCallExpressionParsing(t *testing.T) {
-	input := `add(1, 2 * 3, 4 + 5);`
+	input := `add(1, 2 * 3, 4 + 5)`
 
 	l := lexer.New(input, "testCall")
 	p := New(l)
@@ -53,9 +55,9 @@ func TestFunctionParameterParsing(t *testing.T) {
 		input          string
 		expectedParams []string
 	}{
-		{input: "fn() {};", expectedParams: []string{}},
-		{input: "fn(x,) {};", expectedParams: []string{"x"}},
-		{input: "fn(x, y, z,) {};", expectedParams: []string{"x", "y", "z"}},
+		{input: "fn() {}", expectedParams: []string{}},
+		{input: "fn(x,) {}", expectedParams: []string{"x"}},
+		{input: "fn(x, y, z,) {}", expectedParams: []string{"x", "y", "z"}},
 	}
 
 	for _, tt := range tests {
@@ -80,7 +82,7 @@ func TestFunctionParameterParsing(t *testing.T) {
 
 // Test Parsing a function
 func TestFunctionLiteralParsing(t *testing.T) {
-	input := `fn(x, y) { x + y; };`
+	input := `fn(x, y) { x + y }`
 
 	l := lexer.New(input, "testFunction")
 	p := New(l)
@@ -689,7 +691,7 @@ func CheckIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 
 // Test parsing of booleans
 func TestBooleanExpression(t *testing.T) {
-	input := "true;"
+	input := "true"
 
 	l := lexer.New(input, "testBoolean")
 	p := New(l)
@@ -724,7 +726,7 @@ func TestBooleanExpression(t *testing.T) {
 
 // Test parsing of literals
 func TestIntegerLiteralExpression(t *testing.T) {
-	input := "5;"
+	input := "5"
 
 	l := lexer.New(input, "testLiteral")
 	p := New(l)
@@ -759,7 +761,7 @@ func TestIntegerLiteralExpression(t *testing.T) {
 
 // Test parsing of the identifier
 func TestIdentifierExpression(t *testing.T) {
-	input := "foobar;"
+	input := "foobar"
 
 	l := lexer.New(input, "testIdentifier")
 	p := New(l)

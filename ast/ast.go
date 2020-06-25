@@ -115,6 +115,23 @@ func (i *Identifier) ToString() string {
 	return i.Value
 }
 
+// ExpressionStatement Wrapper that tells it to print
+type PrintExpressionStatement struct {
+	Token   token.Token
+	ExpStmt *ExpressionStatement
+}
+
+func (pes *PrintExpressionStatement) StatementNode() {}
+func (pes *PrintExpressionStatement) TokenLiteral() string {
+	return pes.Token.Literal
+}
+func (pes *PrintExpressionStatement) ToString() string {
+	if pes.ExpStmt != nil {
+		return pes.ExpStmt.ToString()
+	}
+	return ""
+}
+
 // An expression statement, a wrapper around an expression
 type ExpressionStatement struct {
 	Token      token.Token // Expression Token

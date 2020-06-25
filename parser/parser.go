@@ -256,8 +256,10 @@ func (p *Parser) ParseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 
-// Parse a expressionStatement
-func (p *Parser) ParseExpressionStatement() *ast.ExpressionStatement {
+// Parse an expressionStatement
+func (p *Parser) ParseExpressionStatement() interface {
+	ast.Statement
+} {
 	// Allocate Memory
 	stmt := &ast.ExpressionStatement{Token: p.currentToken}
 
@@ -266,9 +268,14 @@ func (p *Parser) ParseExpressionStatement() *ast.ExpressionStatement {
 
 	// Advance through ; if exists
 	if p.PeekTokenIs(token.SEMICOLON) {
-		// Can prob wrap the expression into a new ast node
-		// TODO: Print if ;
+
+		// TODO: This is not done very well
+		pStmt := &ast.PrintExpressionStatement{
+			Token:   stmt.Token,
+			ExpStmt: stmt,
+		}
 		p.NextToken()
+		return pStmt
 	}
 
 	return stmt

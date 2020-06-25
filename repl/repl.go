@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"Monkey/evaluator"
 	"Monkey/lexer"
 	"Monkey/parser"
 	"bufio"
@@ -50,8 +51,13 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
+		// Eval it
+		evaluated := evaluator.Eval(program)
+
 		// Print the parsed program out
-		io.WriteString(out, program.ToString())
-		io.WriteString(out, "\n")
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
