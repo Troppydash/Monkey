@@ -23,6 +23,7 @@ const (
 
 // A Map Contains a Token to Precedences key value pair
 var precedences = map[token.TokenType]int{
+	token.XOR:      GATE,
 	token.AND:      GATE,
 	token.OR:       GATE,
 	token.EQ:       EQUAL,
@@ -102,6 +103,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.PLUS, p.ParsePrefixExpression)
 	p.RegisterPrefix(token.AND, p.ParsePrefixExpression)
 	p.RegisterPrefix(token.OR, p.ParsePrefixExpression)
+	p.RegisterPrefix(token.XOR, p.ParsePrefixExpression)
 
 	p.RegisterPrefix(token.TRUE, p.ParseBoolean)
 	p.RegisterPrefix(token.FALSE, p.ParseBoolean)
@@ -128,6 +130,7 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.RegisterInfix(token.AND, p.ParseInfixExpression)
 	p.RegisterInfix(token.OR, p.ParseInfixExpression)
+	p.RegisterInfix(token.XOR, p.ParseInfixExpression)
 
 	return p
 }
@@ -272,19 +275,20 @@ func (p *Parser) ParseExpressionStatement() interface {
 	stmt := &ast.ExpressionStatement{Token: p.currentToken}
 
 	// Parse Expression
-	stmt.Expression = p.ParseExpression(LOWEST)
+	exp := p.ParseExpression(LOWEST)
 
 	// Advance through ; if exists
 	if p.PeekTokenIs(token.SEMICOLON) {
 
-		// TODO: This is not done very well
 		pStmt := &ast.PrintExpressionStatement{
-			Token:   stmt.Token,
-			ExpStmt: stmt,
+			Token:      stmt.Token,
+			Expression: exp,
 		}
 		p.NextToken()
 		return pStmt
 	}
+
+	stmt.Expression = exp
 
 	return stmt
 }

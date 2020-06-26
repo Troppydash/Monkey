@@ -117,8 +117,8 @@ func (i *Identifier) ToString() string {
 
 // ExpressionStatement Wrapper that tells it to print
 type PrintExpressionStatement struct {
-	Token   token.Token
-	ExpStmt *ExpressionStatement
+	Token      token.Token
+	Expression Expression
 }
 
 func (pes *PrintExpressionStatement) StatementNode() {}
@@ -126,8 +126,8 @@ func (pes *PrintExpressionStatement) TokenLiteral() string {
 	return pes.Token.Literal
 }
 func (pes *PrintExpressionStatement) ToString() string {
-	if pes.ExpStmt != nil {
-		return pes.ExpStmt.ToString()
+	if pes.Expression != nil {
+		return pes.Expression.ToString()
 	}
 	return ""
 }

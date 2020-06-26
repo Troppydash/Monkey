@@ -72,6 +72,23 @@ func TestEvalBooleanExpression(t *testing.T) {
 	}{
 		{"true", true},
 		{"false", false},
+		{"1 < 2", true},
+		{"1 > 2", false},
+		{"1 < 1", false},
+		{"1 > 1", false},
+		{"1 == 1", true},
+		{"1 != 1", false},
+		{"1 == 2", false},
+		{"1 != 2", true},
+		{"true == true", true},
+		{"false == false", true},
+		{"true == false", false},
+		{"true != false", true},
+		{"false != true", true},
+		{"(1 < 2) == true", true},
+		{"(1 < 2) == false", false},
+		{"(1 > 2) == true", false},
+		{"(1 > 2) == false", true},
 	}
 
 	for _, tt := range tests {
@@ -96,6 +113,39 @@ func CheckBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 	return true
 }
 
+// Test Logic Gates
+func TestLogicGates(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"true and true", true},
+		{"true and false", false},
+		{"false and false", false},
+		{"true or true", true},
+		{"true or false", true},
+		{"false or false", false},
+		{"true xor true", false},
+		{"true xor false", true},
+		{"false xor false", false},
+
+		{"true && true", true},
+		{"true && false", false},
+		{"false && false", false},
+		{"true || true", true},
+		{"true || false", true},
+		{"false || false", false},
+		{"true !| true", false},
+		{"true !| false", true},
+		{"false !| false", false},
+	}
+
+	for _, tt := range tests {
+		evaluated := CheckEval(tt.input)
+		CheckBooleanObject(t, evaluated, tt.expected)
+	}
+}
+
 // Test ! eval
 func TestBangOperator(t *testing.T) {
 	tests := []struct {
@@ -106,7 +156,7 @@ func TestBangOperator(t *testing.T) {
 		{"!false", true},
 		{"!5", false},
 		{"!!true", true},
-		{"!!", true},
+		{"!!1", true},
 	}
 
 	for _, tt := range tests {

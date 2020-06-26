@@ -85,6 +85,25 @@ func (l *Lexer) NextToken() token.Token {
 	case '/':
 		tok = NewToken(token.SLASH, l.ch)
 
+	case '&':
+		if l.PeekChar() == '&' {
+			// Set the row numbers
+			tok = NewToken(token.AND, 0)
+			tok.Literal = "and"
+
+			// Advance Pointer
+			l.ReadChar()
+		}
+	case '|':
+		if l.PeekChar() == '|' {
+			// Set the row numbers
+			tok = NewToken(token.OR, 0)
+			tok.Literal = "or"
+
+			// Advance Pointer
+			l.ReadChar()
+		}
+
 	case '!':
 		if l.PeekChar() == '=' {
 			// First '!'
@@ -98,6 +117,13 @@ func (l *Lexer) NextToken() token.Token {
 
 			// Set Literal
 			tok.Literal = string(ch) + string(l.ch)
+		} else if l.PeekChar() == '|' {
+			// Set the row numbers
+			tok = NewToken(token.XOR, 0)
+			tok.Literal = "xor"
+
+			// Advance Pointer
+			l.ReadChar()
 		} else {
 			tok = NewToken(token.BANG, l.ch)
 		}

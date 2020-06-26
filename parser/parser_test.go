@@ -7,8 +7,30 @@ import (
 	"testing"
 )
 
-// TODO: Write tests for the new printExpStmt node
-// TODO: Write tests for And and Or Gates
+func TestPrintExpStmtParsing(t *testing.T) {
+	input := `12;`
+
+	l := lexer.New(input, "testCall")
+	p := New(l)
+	program := p.ParseProgram()
+	p.CheckParserErrors(t)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d",
+			1, len(program.Statements))
+	}
+
+	prntStmt, ok := program.Statements[0].(*ast.PrintExpressionStatement)
+	if !ok {
+		t.Fatalf("stmt is not type *ast.PrintExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+
+	if !CheckLiteralExpression(t, prntStmt.Expression, 12) {
+		return
+	}
+
+}
 
 // Test Function Call Parsing
 func TestCallExpressionParsing(t *testing.T) {

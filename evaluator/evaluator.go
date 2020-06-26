@@ -24,7 +24,7 @@ func Eval(node ast.Node) object.Object {
 		return Eval(node.Expression)
 
 	case *ast.PrintExpressionStatement:
-		return EvalPrintExpressionStatement(node.ExpStmt)
+		return EvalPrintExpressionStatement(node.Expression)
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -44,23 +44,67 @@ func Eval(node ast.Node) object.Object {
 	return nil
 }
 
+// Master function to determine if an object is true or not
+func IsTruthful(obj object.Object) bool {
+	switch {
+	case obj == FALSE, obj == NULL:
+		return false
+	case obj.Type() == object.INTEGER_OBJ:
+		integer := obj.(*object.Integer)
+		return integer.Value != 0
+	default:
+		return true
+	}
+}
+
 // Eval Infix Expression
 func EvalInfixExpression(node *ast.InfixExpression) object.Object {
 	operator := node.Operator
 	left := Eval(node.Left)
 
-	if operator == token.AND || operator == token.OR {
-		// Implement Short Circuit
-		return NULL
+	switch operator {
+	case token.AND:
+		return EvalAndExpression(left, node.Right)
+	case token.OR:
+		return EvalOrExpression(left, node.Right)
+	case token.XOR:
+		right := Eval(node.Right)
+		return NativeBoolToBooleanObject(IsTruthful(left) != IsTruthful(right))
 	}
 
 	right := Eval(node.Right)
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return EvalIntegerInfixExpression(operator, left, right)
+	case operator == "==":
+		return NativeBoolToBooleanObject(left == right)
+	case operator == "!=":
+		return NativeBoolToBooleanObject(left != right)
 	default:
 		return NULL
 	}
+}
+
+// Eval Or Expression
+func EvalOrExpression(left object.Object, rightExp ast.Expression) object.Object {
+	// If True
+	if IsTruthful(left) {
+		// Short circuit
+		return NativeBoolToBooleanObject(true)
+	}
+	right := Eval(rightExp)
+	return NativeBoolToBooleanObject(IsTruthful(right))
+}
+
+// Eval And Expression
+func EvalAndExpression(left object.Object, rightExp ast.Expression) object.Object {
+	// If false
+	if !IsTruthful(left) {
+		// Short circuit
+		return NativeBoolToBooleanObject(false)
+	}
+	right := Eval(rightExp)
+	return NativeBoolToBooleanObject(IsTruthful(right))
 }
 
 // Eval Integer Expression
@@ -77,6 +121,18 @@ func EvalIntegerInfixExpression(operator string, left object.Object, right objec
 		return &object.Integer{Value: leftVal * rightVal}
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
+	case "<":
+		return NativeBoolToBooleanObject(leftVal < rightVal)
+	case "<=":
+		return NativeBoolToBooleanObject(leftVal <= rightVal)
+	case ">":
+		return NativeBoolToBooleanObject(leftVal > rightVal)
+	case ">=":
+		return NativeBoolToBooleanObject(leftVal >= rightVal)
+	case "==":
+		return NativeBoolToBooleanObject(leftVal == rightVal)
+	case "!=":
+		return NativeBoolToBooleanObject(leftVal != rightVal)
 	default:
 		return NULL
 	}
@@ -118,16 +174,8 @@ func EvalMinusPrefixOperatorExpression(right object.Object) object.Object {
 
 // Eval the bang/invert operator
 func EvalBangOperatorExpression(right object.Object) object.Object {
-	switch right {
-	case NULL:
-		return TRUE
-	case FALSE:
-		return TRUE
-	case TRUE:
-		return FALSE
-	default:
-		return FALSE
-	}
+	isTrue := IsTruthful(right)
+	return NativeBoolToBooleanObject(!isTrue)
 }
 
 // Converter a native type to boolean object
@@ -139,8 +187,8 @@ func NativeBoolToBooleanObject(value bool) object.Object {
 }
 
 // Eval Print ExpressionStmt
-func EvalPrintExpressionStatement(expStmt *ast.ExpressionStatement) object.Object {
-	result := Eval(expStmt)
+func EvalPrintExpressionStatement(exp ast.Expression) object.Object {
+	result := Eval(exp)
 	fmt.Println(result.Inspect())
 	return result
 }
