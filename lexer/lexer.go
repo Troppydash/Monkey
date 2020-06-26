@@ -85,6 +85,9 @@ func (l *Lexer) NextToken() token.Token {
 	case '/':
 		tok = NewToken(token.SLASH, l.ch)
 
+	case '%':
+		tok = NewToken(token.PERCENT, l.ch)
+
 	case '&':
 		if l.PeekChar() == '&' {
 			// Set the row numbers

@@ -77,9 +77,9 @@ func EvalInfixExpression(node *ast.InfixExpression) object.Object {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return EvalIntegerInfixExpression(operator, left, right)
 	case operator == "==":
-		return NativeBoolToBooleanObject(left == right)
+		return NativeBoolToBooleanObject(IsTruthful(left) == IsTruthful(right))
 	case operator == "!=":
-		return NativeBoolToBooleanObject(left != right)
+		return NativeBoolToBooleanObject(IsTruthful(left) != IsTruthful(right))
 	default:
 		return NULL
 	}
@@ -121,6 +121,8 @@ func EvalIntegerInfixExpression(operator string, left object.Object, right objec
 		return &object.Integer{Value: leftVal * rightVal}
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
+	case "%":
+		return &object.Integer{Value: leftVal % rightVal}
 	case "<":
 		return NativeBoolToBooleanObject(leftVal < rightVal)
 	case "<=":
