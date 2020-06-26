@@ -42,8 +42,11 @@ func (p *Program) TokenLiteral() string {
 func (p *Program) ToString() string {
 	var out strings.Builder
 
-	for _, s := range p.Statements {
+	for i, s := range p.Statements {
 		out.WriteString(s.ToString())
+		if i != len(p.Statements)-1 {
+			out.WriteString(" ")
+		}
 	}
 
 	return out.String()
