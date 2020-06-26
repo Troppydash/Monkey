@@ -1,6 +1,9 @@
 package object
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // Object Types
 const (
@@ -20,14 +23,14 @@ type Object interface {
 
 // The integer wrapper
 type Integer struct {
-	Value int64
+	Value float64
 }
 
 func (i *Integer) Type() ObjectType {
 	return INTEGER_OBJ
 }
 func (i *Integer) Inspect() string {
-	return fmt.Sprintf("%d", i.Value)
+	return strconv.FormatFloat(i.Value, 'f', -1, 64)
 }
 
 // The boolean wrapper

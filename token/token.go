@@ -1,5 +1,7 @@
 package token
 
+// TODO: Implement power
+
 // All Token Types
 const (
 	// Others

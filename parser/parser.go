@@ -356,7 +356,7 @@ func (p *Parser) ParseIdentifier() ast.Expression {
 func (p *Parser) ParseIntegerLiteral() ast.Expression {
 	lit := &ast.IntegerLiteral{Token: p.currentToken}
 
-	value, err := strconv.ParseInt(p.currentToken.Literal, 0, 64)
+	value, err := strconv.ParseFloat(p.currentToken.Literal, 64)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as integer", p.currentToken.Literal)
 		p.GenerateErrorForToken(msg, &p.currentToken)

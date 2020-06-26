@@ -152,7 +152,7 @@ func (es *ExpressionStatement) ToString() string {
 // An expression Literal
 type IntegerLiteral struct {
 	Token token.Token // INT Token
-	Value int64       // Number Value
+	Value float64     // Number Value
 }
 
 func (il *IntegerLiteral) ExpressionNode() {}

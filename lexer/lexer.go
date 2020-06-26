@@ -252,6 +252,15 @@ func (l *Lexer) ReadNumber() string {
 		l.ReadChar()
 	}
 
+	if l.ch == '.' {
+		l.ReadChar()
+		if IsDigit(l.ch) {
+			for IsDigit(l.ch) {
+				l.ReadChar()
+			}
+		}
+	}
+
 	// Return string-number slice
 	return l.input[position:l.position]
 }
