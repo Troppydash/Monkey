@@ -41,7 +41,7 @@ func Eval(node ast.Node) object.Object {
 		return EvalInfixExpression(node)
 	}
 
-	return nil
+	return NULL
 }
 
 // Master function to determine if an object is true or not
@@ -73,6 +73,7 @@ func EvalInfixExpression(node *ast.InfixExpression) object.Object {
 	}
 
 	right := Eval(node.Right)
+
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return EvalIntegerInfixExpression(operator, left, right)

@@ -1,6 +1,6 @@
 package token
 
-// TODO: Implement power
+// TODO: Implement power and sqrt as functions
 
 // All Token Types
 const (

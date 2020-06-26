@@ -4,8 +4,23 @@ import (
 	"Monkey/ast"
 	"Monkey/lexer"
 	"fmt"
+	"math"
+	"strconv"
 	"testing"
 )
+
+const float64EqualityThreshold = 1e-9
+
+func AlmostEqual(left float64, right float64) bool {
+	return math.Abs(left-right) <= float64EqualityThreshold
+
+}
+
+func FormatFloat(t float64) string {
+	return strconv.FormatFloat(t, 'f', -1, 64)
+}
+
+// Todo: Test Floating point numbers
 
 func TestPrintExpStmtParsing(t *testing.T) {
 	input := `12;`
@@ -485,8 +500,8 @@ func CheckLiteralExpression(
 ) bool {
 	switch v := expected.(type) {
 	case int:
-		return CheckIntegerLiteral(t, exp, int64(v))
-	case int64:
+		return CheckIntegerLiteral(t, exp, float64(v))
+	case float64:
 		return CheckIntegerLiteral(t, exp, v)
 	case string:
 		return CheckIdentifier(t, exp, v)
@@ -658,7 +673,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
 		input        string
 		operator     string
-		integerValue int64
+		integerValue float64
 	}{
 		{"!5", "!", 5},
 		{"-15", "-", 15},
@@ -698,21 +713,21 @@ func TestParsingPrefixExpressions(t *testing.T) {
 	}
 }
 
-func CheckIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
+func CheckIntegerLiteral(t *testing.T, il ast.Expression, value float64) bool {
 	integ, ok := il.(*ast.IntegerLiteral)
 	if !ok {
 		t.Errorf("expression not type *ast.IntegerLiteral. got=%T", il)
 		return false
 	}
 
-	if integ.Value != value {
-		t.Errorf("integ.Value not %d. got=%d",
+	if !AlmostEqual(integ.Value, value) {
+		t.Errorf("integ.Value not %f. got=%f",
 			value, integ.Value)
 		return false
 	}
 
-	if integ.TokenLiteral() != fmt.Sprintf("%d", value) {
-		t.Errorf("integ.TokenLiteral not %d. got=%s",
+	if integ.TokenLiteral() != FormatFloat(value) {
+		t.Errorf("integ.TokenLiteral not %f. got=%s",
 			value, integ.TokenLiteral())
 		return false
 	}
@@ -781,7 +796,7 @@ func TestIntegerLiteralExpression(t *testing.T) {
 			stmt.Expression)
 	}
 	if literal.Value != 5 {
-		t.Errorf("literal.Value not %d. got=%d",
+		t.Errorf("literal.Value not %d. got=%f",
 			5, literal.Value)
 	}
 	if literal.TokenLiteral() != "5" {

@@ -11,7 +11,7 @@ import (
 func TestEvalIntegerExpression(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected float64
 	}{
 		{"5", 5},
 		{"10", 10},
@@ -48,7 +48,7 @@ func CheckEval(input string) object.Object {
 }
 
 // Check if integer object
-func CheckIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
+func CheckIntegerObject(t *testing.T, obj object.Object, expected float64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
 		t.Errorf("object is not type Integer. got=%T (%+v)",
@@ -56,7 +56,7 @@ func CheckIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 		return false
 	}
 	if result.Value != expected {
-		t.Errorf("object has wrong value. got=%d, expect=%d",
+		t.Errorf("object has wrong value. got=%f, expect=%f",
 			result.Value, expected)
 		return false
 	}
