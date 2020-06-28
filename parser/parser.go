@@ -20,11 +20,11 @@ func AlmostEqual(left float64, right float64) bool {
 const (
 	_ int = iota
 	LOWEST
-	GATE
+	GATE    // and, or, xor
 	EQUAL   // == or !=
 	COMPARE // > or < or <= or >=
 	SUM     // + or -
-	PRODUCT // * or /
+	PRODUCT // * or / or %
 	PREFIX  // !X or -X
 	CALL    // foobar()
 )
