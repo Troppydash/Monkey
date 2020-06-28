@@ -1,11 +1,16 @@
 package ast
 
 import (
+	"Monkey/options"
 	"Monkey/token"
 	"testing"
 )
 
 func TestToString(t *testing.T) {
+
+	if options.NicerToString {
+		return
+	}
 
 	// let foo = bar;
 	program := &Program{
@@ -24,7 +29,7 @@ func TestToString(t *testing.T) {
 		},
 	}
 
-	if program.ToString() != "let foo = bar;" {
+	if program.ToString() != "[(let (foo) = (bar);)]" {
 		t.Errorf("program.ToString() incorrect. got=%q",
 			program.ToString())
 	}

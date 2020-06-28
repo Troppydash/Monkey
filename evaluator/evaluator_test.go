@@ -7,6 +7,40 @@ import (
 	"testing"
 )
 
+func TestIfElseExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"if true { 10 }", 10},
+		{"if (false) { 10 }", nil},
+		{"if 1 { 10 }", 10},
+		{"if (1 < 2) { 10 }", 10},
+		{"if 1 > 2 { 10 }", nil},
+		{"if (1 > 2) { 10 } else { 20 }", 20},
+		{"if (1 < 2) { 10 } else { 20 }", 10},
+		{"if 1 > 2 { 1 } else if 1 == 2 { 20 } else { 14 }", 14},
+		{"if 1 > 2 { 1 } else if 1 != 2 { 20 } else { 14 }", 20},
+	}
+	for _, tt := range tests {
+		evaluated := CheckEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			CheckIntegerObject(t, evaluated, float64(integer))
+		} else {
+			CheckNullObject(t, evaluated)
+		}
+	}
+}
+
+func CheckNullObject(t *testing.T, obj object.Object) bool {
+	if obj != NULL {
+		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)
+		return false
+	}
+	return true
+}
+
 // Test Eval of Integer
 func TestEvalIntegerExpression(t *testing.T) {
 	tests := []struct {

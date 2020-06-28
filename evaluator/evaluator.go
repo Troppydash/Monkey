@@ -13,6 +13,19 @@ var (
 	NULL  = &object.Null{}
 )
 
+// Master function to determine if an object is true or not
+func IsTruthful(obj object.Object) bool {
+	switch {
+	case obj == FALSE, obj == NULL:
+		return false
+	case obj.Type() == object.INTEGER_OBJ:
+		integer := obj.(*object.Integer)
+		return integer.Value != 0
+	default:
+		return true
+	}
+}
+
 // Master Eval Function
 func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
@@ -39,21 +52,27 @@ func Eval(node ast.Node) object.Object {
 	case *ast.InfixExpression:
 		// We need to short circuit AND or OR gates
 		return EvalInfixExpression(node)
+
+	case *ast.BlockStatement:
+		return EvalStatements(node.Statements)
+
+	case *ast.IfExpression:
+		return EvalIfExpression(node)
 	}
 
 	return NULL
 }
 
-// Master function to determine if an object is true or not
-func IsTruthful(obj object.Object) bool {
-	switch {
-	case obj == FALSE, obj == NULL:
-		return false
-	case obj.Type() == object.INTEGER_OBJ:
-		integer := obj.(*object.Integer)
-		return integer.Value != 0
-	default:
-		return true
+// Eval If Expression
+func EvalIfExpression(ie *ast.IfExpression) object.Object {
+	condition := Eval(ie.Condition)
+
+	if IsTruthful(condition) {
+		return Eval(ie.Consequence)
+	} else if ie.Alternative != nil {
+		return Eval(ie.Alternative)
+	} else {
+		return NULL
 	}
 }
 

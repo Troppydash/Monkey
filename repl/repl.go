@@ -3,10 +3,12 @@ package repl
 import (
 	"Monkey/evaluator"
 	"Monkey/lexer"
+	"Monkey/options"
 	"Monkey/parser"
 	"bufio"
 	"fmt"
 	"io"
+	"strings"
 )
 
 // Console Prompt header
@@ -39,6 +41,12 @@ func Start(in io.Reader, out io.Writer) {
 
 		// Retrieve Buffer Text
 		line := scanner.Text()
+
+		if strings.Contains(line, "--") {
+			ParseOptions(out, line)
+			continue
+		}
+
 		// Create new lexer
 		l := lexer.New(line, "REPL")
 		// Create new parser
@@ -65,4 +73,18 @@ func Start(in io.Reader, out io.Writer) {
 			io.WriteString(out, "\n")
 		}
 	}
+}
+
+func ParseOptions(out io.Writer, line string) {
+	switch line {
+	case "--on nicer":
+		options.NicerToString = true
+		io.WriteString(out, "Enabled Nicer ToString")
+	case "--off nicer":
+		options.NicerToString = false
+		io.WriteString(out, "Disabled Nicer ToString")
+	default:
+		io.WriteString(out, "No options matching your request has been found")
+	}
+	io.WriteString(out, "\n")
 }

@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"Monkey/options"
 	"Monkey/token"
 	"strings"
 )
@@ -42,12 +43,14 @@ func (p *Program) TokenLiteral() string {
 func (p *Program) ToString() string {
 	var out strings.Builder
 
+	AddOptionalString(&out, "[")
 	for i, s := range p.Statements {
 		out.WriteString(s.ToString())
 		if i != len(p.Statements)-1 {
 			out.WriteString(" ")
 		}
 	}
+	AddOptionalString(&out, "]")
 
 	return out.String()
 }
@@ -66,6 +69,7 @@ func (ls *LetStatement) TokenLiteral() string {
 func (ls *LetStatement) ToString() string {
 	var out strings.Builder
 
+	AddOpeningBrace(&out)
 	out.WriteString(ls.TokenLiteral() + " ")
 	out.WriteString(ls.Name.ToString())
 	out.WriteString(" = ")
@@ -77,6 +81,7 @@ func (ls *LetStatement) ToString() string {
 	}
 
 	out.WriteString(";")
+	AddClosingBrace(&out)
 
 	return out.String()
 }
@@ -94,6 +99,7 @@ func (rs *ReturnStatement) TokenLiteral() string {
 func (rs *ReturnStatement) ToString() string {
 	var out strings.Builder
 
+	AddOpeningBrace(&out)
 	out.WriteString(rs.TokenLiteral())
 
 	if rs.ReturnValue != nil {
@@ -101,6 +107,7 @@ func (rs *ReturnStatement) ToString() string {
 	}
 
 	out.WriteString(";")
+	AddClosingBrace(&out)
 	return out.String()
 }
 
@@ -115,7 +122,12 @@ func (i *Identifier) TokenLiteral() string {
 	return i.Token.Literal
 }
 func (i *Identifier) ToString() string {
-	return i.Value
+	var out strings.Builder
+
+	AddOpeningBrace(&out)
+	out.WriteString(i.Value)
+	AddClosingBrace(&out)
+	return out.String()
 }
 
 // ExpressionStatement Wrapper that tells it to print
@@ -163,7 +175,12 @@ func (il *IntegerLiteral) TokenLiteral() string {
 	return il.Token.Literal
 }
 func (il *IntegerLiteral) ToString() string {
-	return il.Token.Literal
+	var out strings.Builder
+
+	AddOpeningBrace(&out)
+	out.WriteString(il.Token.Literal)
+	AddClosingBrace(&out)
+	return out.String()
 }
 
 // An expression prefix
@@ -180,11 +197,10 @@ func (pe *PrefixExpression) TokenLiteral() string {
 func (pe *PrefixExpression) ToString() string {
 	var out strings.Builder
 
-	out.WriteString("(")
+	AddOpeningBrace(&out)
 	out.WriteString(pe.Operator)
 	out.WriteString(pe.Right.ToString())
-	out.WriteString(")")
-
+	AddClosingBrace(&out)
 	return out.String()
 }
 
@@ -202,12 +218,11 @@ func (ie *InfixExpression) TokenLiteral() string {
 func (ie *InfixExpression) ToString() string {
 	var out strings.Builder
 
-	out.WriteString("(")
+	AddOpeningBrace(&out)
 	out.WriteString(ie.Left.ToString())
 	out.WriteString(" " + ie.Operator + " ")
 	out.WriteString(ie.Right.ToString())
-	out.WriteString(")")
-
+	AddClosingBrace(&out)
 	return out.String()
 }
 
@@ -237,9 +252,12 @@ func (bs *BlockStatement) TokenLiteral() string {
 }
 func (bs *BlockStatement) ToString() string {
 	var out strings.Builder
+
+	out.WriteString("{")
 	for _, s := range bs.Statements {
 		out.WriteString(s.ToString())
 	}
+	out.WriteString("}")
 	return out.String()
 }
 
@@ -258,16 +276,18 @@ func (ie *IfExpression) TokenLiteral() string {
 func (ie *IfExpression) ToString() string {
 	var out strings.Builder
 
-	out.WriteString("if")
+	AddOpeningBrace(&out)
+	out.WriteString("if ")
 	out.WriteString(ie.Condition.ToString())
 	out.WriteString(" ")
+	AddOpeningBrace(&out)
 	out.WriteString(ie.Consequence.ToString())
-
+	AddClosingBrace(&out)
 	if ie.Alternative != nil {
-		out.WriteString("else ")
+		out.WriteString(" else ")
 		out.WriteString(ie.Alternative.ToString())
 	}
-
+	AddClosingBrace(&out)
 	return out.String()
 }
 
@@ -291,11 +311,15 @@ func (fl *FunctionLiteral) ToString() string {
 		params = append(params, p.ToString())
 	}
 
+	AddOpeningBrace(&out)
+
 	out.WriteString(fl.TokenLiteral())
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") ")
 	out.WriteString(fl.Body.ToString())
+
+	AddClosingBrace(&out)
 
 	return out.String()
 }
@@ -319,10 +343,27 @@ func (ce *CallExpression) ToString() string {
 		args = append(args, a.ToString())
 	}
 
+	AddOpeningBrace(&out)
+
 	out.WriteString(ce.Function.ToString())
 	out.WriteString("(")
 	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")
 
+	AddClosingBrace(&out)
 	return out.String()
+}
+
+func AddOptionalString(out *strings.Builder, str string) {
+	if !options.NicerToString {
+		out.WriteString(str)
+	}
+}
+
+func AddOpeningBrace(out *strings.Builder) {
+	AddOptionalString(out, "(")
+}
+
+func AddClosingBrace(out *strings.Builder) {
+	AddOptionalString(out, ")")
 }
