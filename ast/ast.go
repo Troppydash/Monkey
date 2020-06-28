@@ -218,11 +218,12 @@ func (ie *InfixExpression) TokenLiteral() string {
 func (ie *InfixExpression) ToString() string {
 	var out strings.Builder
 
-	AddOpeningBrace(&out)
+	out.WriteString("(")
 	out.WriteString(ie.Left.ToString())
 	out.WriteString(" " + ie.Operator + " ")
 	out.WriteString(ie.Right.ToString())
-	AddClosingBrace(&out)
+	out.WriteString(")")
+
 	return out.String()
 }
 
