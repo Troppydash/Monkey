@@ -7,6 +7,28 @@ import (
 	"testing"
 )
 
+// Test return statements
+func TestReturnStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"5", 5},
+		{"return 10", 10},
+		{"return 10; 9", 10},
+		{"return 2 * 5; 9", 10},
+		{"let foo = 2 * 5; 9", 9},
+		{"if 10 > 1 { return if 10 > 1 { 10 } 1 }", 10},
+	}
+
+	for _, tt := range tests {
+		evaluated := CheckEval(tt.input)
+		CheckIntegerObject(t, evaluated, tt.expected)
+	}
+
+}
+
+// Test If Else Expressions
 func TestIfElseExpressions(t *testing.T) {
 	tests := []struct {
 		input    string

@@ -7,9 +7,11 @@ import (
 
 // Object Types
 const (
-	INTEGER_OBJ = "INTEGER" // Int
-	BOOLEAN_OBJ = "BOOLEAN" // Bool
-	NULL_OBJ    = "NULL"    // Disgusting
+	INTEGER_OBJ          = "INTEGER" // Int
+	BOOLEAN_OBJ          = "BOOLEAN" // Bool
+	NULL_OBJ             = "NULL"    // Disgusting
+	RETURN_VALUE_OBJ     = "RETURN_VALUE"
+	EXPRESSION_VALUE_OBJ = "EXPRESSION_VALUE"
 )
 
 // The type of the object
@@ -53,4 +55,15 @@ func (n *Null) Type() ObjectType {
 }
 func (n *Null) Inspect() string {
 	return "null"
+}
+
+type ReturnValue struct {
+	Value Object
+}
+
+func (rv *ReturnValue) Type() ObjectType {
+	return RETURN_VALUE_OBJ
+}
+func (rv *ReturnValue) Inspect() string {
+	return rv.Value.Inspect()
 }
