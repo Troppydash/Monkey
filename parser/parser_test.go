@@ -4,23 +4,46 @@ import (
 	"Monkey/ast"
 	"Monkey/lexer"
 	"fmt"
-	"math"
 	"strconv"
+	"strings"
 	"testing"
 )
-
-const float64EqualityThreshold = 1e-9
-
-func AlmostEqual(left float64, right float64) bool {
-	return math.Abs(left-right) <= float64EqualityThreshold
-
-}
 
 func FormatFloat(t float64) string {
 	return strconv.FormatFloat(t, 'f', -1, 64)
 }
 
-// Todo: Test Floating point numbers
+func TestFloatingPointNumbers(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"1.5", 1.5},
+		{"300.0", 300.0},
+		{"0.", 0},
+		{"0.1", 0.1},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input, "testFloat")
+		p := New(l)
+		program := p.ParseProgram()
+		p.CheckParserErrors(t)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program does not contain enough statements. got=%d",
+				len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] not type *ast.ExpressionStatement. got=%T",
+				program.Statements[0])
+		}
+
+		CheckIntegerLiteral(t, stmt.Expression, tt.expected)
+	}
+}
 
 func TestPrintExpStmtParsing(t *testing.T) {
 	input := `12;`
@@ -726,9 +749,9 @@ func CheckIntegerLiteral(t *testing.T, il ast.Expression, value float64) bool {
 		return false
 	}
 
-	if integ.TokenLiteral() != FormatFloat(value) {
-		t.Errorf("integ.TokenLiteral not %f. got=%s",
-			value, integ.TokenLiteral())
+	if !strings.Contains(integ.TokenLiteral(), FormatFloat(value)) {
+		t.Errorf("integ.TokenLiteral not %s. got=%s",
+			FormatFloat(value), integ.TokenLiteral())
 		return false
 	}
 

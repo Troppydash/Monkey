@@ -19,6 +19,12 @@ func TestEvalIntegerExpression(t *testing.T) {
 		{"-5", -5},
 		{"+5", +5},
 		{"+10", +10},
+		{"-10.5", -10.5},
+		{"-0.", 0},
+		{"1.5 + 2.5", 4},
+		{"3.2 * 3", 9.6},
+		{"4 / 2.0", 2},
+		{"5.0 % 2.0", 1},
 		{" 5 + 5 + 5 + 5 - 10", 10},
 		{"2 * 2 * 2 * 2 * 2", 32},
 		{"-50 + 100 + -50", 0},
@@ -55,7 +61,7 @@ func CheckIntegerObject(t *testing.T, obj object.Object, expected float64) bool 
 			obj, obj)
 		return false
 	}
-	if result.Value != expected {
+	if !parser.AlmostEqual(result.Value, expected) {
 		t.Errorf("object has wrong value. got=%f, expect=%f",
 			result.Value, expected)
 		return false

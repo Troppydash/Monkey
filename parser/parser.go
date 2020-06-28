@@ -5,8 +5,16 @@ import (
 	"Monkey/lexer"
 	"Monkey/token"
 	"fmt"
+	"math"
 	"strconv"
 )
+
+const float64EqualityThreshold = 1e-9
+
+func AlmostEqual(left float64, right float64) bool {
+	return math.Abs(left-right) <= float64EqualityThreshold
+
+}
 
 // Expression Parsing Precedences
 const (
