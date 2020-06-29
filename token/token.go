@@ -66,6 +66,20 @@ type Token struct {
 	Filename     string
 }
 
+type TokenData struct {
+	Filename     string
+	RowNumber    int64
+	ColumnNumber int64
+}
+
+func (t *Token) ToTokenData() *TokenData {
+	return &TokenData{
+		Filename:     t.Filename,
+		RowNumber:    t.RowNumber,
+		ColumnNumber: t.ColumnNumber,
+	}
+}
+
 // Hashmap to store string-TokenType values
 var keywords = map[string]TokenType{
 	"fn":     FUNCTION,

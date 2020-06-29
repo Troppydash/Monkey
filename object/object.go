@@ -1,17 +1,18 @@
 package object
 
 import (
+	"Monkey/token"
 	"fmt"
 	"strconv"
 )
 
 // Object Types
 const (
-	INTEGER_OBJ          = "INTEGER" // Int
-	BOOLEAN_OBJ          = "BOOLEAN" // Bool
-	NULL_OBJ             = "NULL"    // Disgusting
-	RETURN_VALUE_OBJ     = "RETURN_VALUE"
-	EXPRESSION_VALUE_OBJ = "EXPRESSION_VALUE"
+	INTEGER_OBJ      = "INTEGER" // Int
+	BOOLEAN_OBJ      = "BOOLEAN" // Bool
+	NULL_OBJ         = "NULL"    // Disgusting
+	RETURN_VALUE_OBJ = "RETURN_VALUE"
+	ERROR_OBJ        = "ERROR"
 )
 
 // The type of the object
@@ -66,4 +67,17 @@ func (rv *ReturnValue) Type() ObjectType {
 }
 func (rv *ReturnValue) Inspect() string {
 	return rv.Value.Inspect()
+}
+
+type Error struct {
+	Message string
+	*token.TokenData
+}
+
+func (e *Error) Type() ObjectType {
+	return ERROR_OBJ
+}
+func (e *Error) Inspect() string {
+	return fmt.Sprintf("ERROR: %s, at %d:%d, in file %s",
+		e.Message, e.RowNumber, e.ColumnNumber, e.Filename)
 }

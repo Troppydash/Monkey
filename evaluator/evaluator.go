@@ -13,6 +13,22 @@ var (
 	NULL  = &object.Null{}
 )
 
+// Create a new error node
+func NewError(data *token.TokenData, format string, a ...interface{}) *object.Error {
+	return &object.Error{
+		Message:   fmt.Sprintf(format, a...),
+		TokenData: data,
+	}
+}
+
+// Is the object an error
+func IsError(obj object.Object) bool {
+	if obj != nil {
+		return obj.Type() == object.ERROR_OBJ
+	}
+	return false
+}
+
 // Master function to determine if an object is true or not
 func IsTruthful(obj object.Object) bool {
 	switch {
@@ -47,7 +63,10 @@ func Eval(node ast.Node) object.Object {
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
-		return EvalPrefixExpression(node.Operator, right)
+		if IsError(right) {
+			return right
+		}
+		return EvalPrefixExpression(node.Operator, right, node.Token)
 
 	case *ast.InfixExpression:
 		// We need to short circuit AND or OR gates
@@ -61,6 +80,9 @@ func Eval(node ast.Node) object.Object {
 
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue)
+		if IsError(val) {
+			return val
+		}
 		return &object.ReturnValue{Value: val}
 	}
 
@@ -74,8 +96,11 @@ func EvalBlockStatement(block *ast.BlockStatement) object.Object {
 	for _, statement := range block.Statements {
 		result = Eval(statement)
 
-		if result != nil && result.Type() == object.RETURN_VALUE_OBJ {
-			return result
+		if result != nil {
+			rt := result.Type()
+			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+				return result
+			}
 		}
 	}
 
@@ -85,6 +110,9 @@ func EvalBlockStatement(block *ast.BlockStatement) object.Object {
 // Eval If Expression
 func EvalIfExpression(ie *ast.IfExpression) object.Object {
 	condition := Eval(ie.Condition)
+	if IsError(condition) {
+		return condition
+	}
 
 	if IsTruthful(condition) {
 		return Eval(ie.Consequence)
@@ -100,6 +128,10 @@ func EvalInfixExpression(node *ast.InfixExpression) object.Object {
 	operator := node.Operator
 	left := Eval(node.Left)
 
+	if IsError(left) {
+		return left
+	}
+
 	switch operator {
 	case token.AND:
 		return EvalAndExpression(left, node.Right)
@@ -107,20 +139,31 @@ func EvalInfixExpression(node *ast.InfixExpression) object.Object {
 		return EvalOrExpression(left, node.Right)
 	case token.XOR:
 		right := Eval(node.Right)
+		if IsError(right) {
+			return right
+		}
 		return NativeBoolToBooleanObject(IsTruthful(left) != IsTruthful(right))
 	}
 
 	right := Eval(node.Right)
+	if IsError(right) {
+		return right
+	}
 
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
-		return EvalIntegerInfixExpression(operator, left, right)
+		return EvalIntegerInfixExpression(operator, left, right, node.Token)
 	case operator == "==":
 		return NativeBoolToBooleanObject(IsTruthful(left) == IsTruthful(right))
 	case operator == "!=":
 		return NativeBoolToBooleanObject(IsTruthful(left) != IsTruthful(right))
+
+	case left.Type() != right.Type():
+		return NewError(node.Token.ToTokenData(), "type mismatch: %s %s %s",
+			left.Type(), operator, right.Type())
 	default:
-		return NULL
+		return NewError(node.Token.ToTokenData(), "unknown operator: %s %s %s",
+			left.Type(), operator, right.Type())
 	}
 }
 
@@ -147,7 +190,7 @@ func EvalAndExpression(left object.Object, rightExp ast.Expression) object.Objec
 }
 
 // Eval Integer Expression
-func EvalIntegerInfixExpression(operator string, left object.Object, right object.Object) object.Object {
+func EvalIntegerInfixExpression(operator string, left object.Object, right object.Object, token token.Token) object.Object {
 	leftVal := left.(*object.Integer).Value
 	rightVal := right.(*object.Integer).Value
 
@@ -175,38 +218,40 @@ func EvalIntegerInfixExpression(operator string, left object.Object, right objec
 	case "!=":
 		return NativeBoolToBooleanObject(leftVal != rightVal)
 	default:
-		return NULL
+		return NewError(token.ToTokenData(), "unknown operator: %s %s %s",
+			left.Type(), operator, right.Type())
 	}
 }
 
 // Eval a prefix expression
-func EvalPrefixExpression(operator string, right object.Object) object.Object {
+func EvalPrefixExpression(operator string, right object.Object, token token.Token) object.Object {
 	switch operator {
 	case "!":
 		return EvalBangOperatorExpression(right)
 	case "-":
-		return EvalMinusPrefixOperatorExpression(right)
+		return EvalMinusPrefixOperatorExpression(right, token)
 	case "+":
-		return EvalPlusPrefixOperatorExpression(right)
+		return EvalPlusPrefixOperatorExpression(right, token)
 	default:
-		return NULL
+		return NewError(token.ToTokenData(), "unknown operator: %s%s",
+			operator, right.Type())
 	}
 }
 
 // Eval + infix operator
-func EvalPlusPrefixOperatorExpression(right object.Object) object.Object {
+func EvalPlusPrefixOperatorExpression(right object.Object, token token.Token) object.Object {
 	if right.Type() != object.INTEGER_OBJ {
-		return NULL
+		return NewError(token.ToTokenData(), "unknown operator: +%s", right.Type())
 	}
 
 	return right
 }
 
 // Eval - infix operator
-func EvalMinusPrefixOperatorExpression(right object.Object) object.Object {
+func EvalMinusPrefixOperatorExpression(right object.Object, token token.Token) object.Object {
 	// Not Integer
 	if right.Type() != object.INTEGER_OBJ {
-		return NULL
+		return NewError(token.ToTokenData(), "unknown operator: -%s", right.Type())
 	}
 
 	value := right.(*object.Integer).Value
@@ -244,6 +289,8 @@ func EvalProgram(program *ast.Program) object.Object {
 		switch result.(type) {
 		case *object.ReturnValue:
 			return result.(*object.ReturnValue).Value
+		case *object.Error:
+			return result
 		}
 	}
 

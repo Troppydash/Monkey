@@ -96,6 +96,8 @@ func (l *Lexer) NextToken() token.Token {
 
 			// Advance Pointer
 			l.ReadChar()
+		} else {
+			tok = NewToken(token.ILLEGAL, l.ch)
 		}
 	case '|':
 		if l.PeekChar() == '|' {
@@ -105,6 +107,8 @@ func (l *Lexer) NextToken() token.Token {
 
 			// Advance Pointer
 			l.ReadChar()
+		} else {
+			tok = NewToken(token.ILLEGAL, l.ch)
 		}
 
 	case '!':
