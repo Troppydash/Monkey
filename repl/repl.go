@@ -3,6 +3,7 @@ package repl
 import (
 	"Monkey/evaluator"
 	"Monkey/lexer"
+	"Monkey/object"
 	"Monkey/options"
 	"Monkey/parser"
 	"bufio"
@@ -28,6 +29,9 @@ func Start(in io.Reader, out io.Writer) {
 
 	// Create a new Scanner
 	scanner := bufio.NewScanner(in)
+
+	// REPL Environment
+	env := object.NewEnvironment()
 
 	for {
 		// Display Prompt Header
@@ -64,7 +68,7 @@ func Start(in io.Reader, out io.Writer) {
 		io.WriteString(out, "\n")
 
 		// Eval it
-		evaluated := evaluator.Eval(program)
+		evaluated := evaluator.Eval(program, env)
 
 		// Print the parsed program out
 		if evaluated != nil {
