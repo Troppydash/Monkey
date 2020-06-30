@@ -9,6 +9,8 @@ import (
 	"strconv"
 )
 
+// TODO: Implement while and for loop
+
 const float64EqualityThreshold = 1e-9
 
 func AlmostEqual(left float64, right float64) bool {
