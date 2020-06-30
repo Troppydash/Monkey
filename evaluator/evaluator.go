@@ -97,9 +97,75 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.Identifier:
 		return EvalIdentifier(node, env)
+
+	case *ast.FunctionLiteral:
+		params := node.Parameters
+		body := node.Body
+		return &object.Function{Parameters: params, Env: env, Body: body}
+
+	case *ast.CallExpression:
+		function := Eval(node.Function, env)
+		if IsError(function) {
+			return function
+		}
+
+		args := EvalExpression(node.Arguments, env)
+		if len(args) == 1 && IsError(args[0]) {
+			return args[0]
+		}
+		return ApplyFunction(node.Token, function, args)
+
 	}
 
 	return NULL
+}
+
+// Create a function and eval it
+func ApplyFunction(token token.Token, function object.Object, args []object.Object) object.Object {
+	fn, ok := function.(*object.Function)
+	if !ok {
+		return NewError(token.ToTokenData(), "not a function: %s", function.Type())
+	}
+
+	extendedEnv := ExtendFunctionEnv(fn, args)
+	evaluated := Eval(fn.Body, extendedEnv)
+	return UnwrapReturnValue(evaluated)
+}
+
+// Unwrap the return value for an object
+func UnwrapReturnValue(evaluated object.Object) object.Object {
+	if returnValue, ok := evaluated.(*object.ReturnValue); ok {
+		return returnValue.Value
+	}
+
+	return evaluated
+}
+
+// Create the environment for the function
+func ExtendFunctionEnv(function *object.Function, args []object.Object) *object.Environment {
+	env := object.NewEnclosingEnvironment(function.Env)
+
+	// Map the arguments to parameters
+	for paramIdx, param := range function.Parameters {
+		env.Store(param.Value, args[paramIdx])
+	}
+
+	return env
+}
+
+// Eval a list of expressions
+func EvalExpression(arguments []ast.Expression, env *object.Environment) []object.Object {
+	var result []object.Object
+
+	for _, e := range arguments {
+		evaluated := Eval(e, env)
+		if IsError(evaluated) {
+			return []object.Object{evaluated}
+		}
+		result = append(result, evaluated)
+	}
+
+	return result
 }
 
 // Fetch the value from env

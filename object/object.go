@@ -1,18 +1,21 @@
 package object
 
 import (
+	"Monkey/ast"
 	"Monkey/token"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // Object Types
 const (
-	INTEGER_OBJ      = "INTEGER" // Int
-	BOOLEAN_OBJ      = "BOOLEAN" // Bool
-	NULL_OBJ         = "NULL"    // Disgusting
-	RETURN_VALUE_OBJ = "RETURN_VALUE"
-	ERROR_OBJ        = "ERROR"
+	INTEGER_OBJ      = "INTEGER"      // Int
+	BOOLEAN_OBJ      = "BOOLEAN"      // Bool
+	NULL_OBJ         = "NULL"         // Disgusting
+	RETURN_VALUE_OBJ = "RETURN_VALUE" // return
+	ERROR_OBJ        = "ERROR"        // error
+	FUNCTION_OBJ     = "FUNCTION"     // fn
 )
 
 // The type of the object
@@ -80,4 +83,31 @@ func (e *Error) Type() ObjectType {
 func (e *Error) Inspect() string {
 	return fmt.Sprintf("ERROR: %s, at %d:%d, in file %s",
 		e.Message, e.RowNumber, e.ColumnNumber, e.Filename)
+}
+
+type Function struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Environment
+}
+
+func (f *Function) Type() ObjectType {
+	return FUNCTION_OBJ
+}
+func (f *Function) Inspect() string {
+	var out strings.Builder
+
+	var params []string
+	for _, p := range f.Parameters {
+		params = append(params, p.ToString())
+	}
+
+	out.WriteString("fn")
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") { ")
+	out.WriteString(f.Body.ToString())
+	out.WriteString(" }")
+
+	return out.String()
 }
