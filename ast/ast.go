@@ -356,6 +356,26 @@ func (ce *CallExpression) ToString() string {
 	return out.String()
 }
 
+// String
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl *StringLiteral) ExpressionNode() {}
+func (sl *StringLiteral) TokenLiteral() string {
+	return sl.Token.Literal
+}
+func (sl *StringLiteral) ToString() string {
+	var out strings.Builder
+
+	out.WriteString("\"")
+	out.WriteString(sl.Token.Literal)
+	out.WriteString("\"")
+
+	return out.String()
+}
+
 func AddOptionalString(out *strings.Builder, str string) {
 	if !options.NicerToString {
 		out.WriteString(str)

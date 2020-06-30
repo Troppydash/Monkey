@@ -27,7 +27,14 @@ if (5 < 10) {
 10 == 10;
 10 != 9;
 10 >= 1;
-1 <= 10;`
+1 <= 10;
+"foobar"
+"foo bar"
+'foobar'
+'foo bar'
+'foo\n\t\"\':)'
+"hello \"world\""
+`
 
 	// What the Parser/Lexer should return
 	tests := []struct {
@@ -123,6 +130,14 @@ if (5 < 10) {
 		{token.LE, "<=", 10, 11},
 		{token.INT, "10", 10, 11},
 		{token.SEMICOLON, ";", 10, 11},
+
+		{token.STRING, "foobar", 10, 11},
+		{token.STRING, "foo bar", 10, 11},
+
+		{token.STRING, "foobar", 10, 11},
+		{token.STRING, "foo bar", 10, 11},
+		{token.STRING, "foo\n\t\"':)", 10, 11},
+		{token.STRING, `hello "world"`, 10, 11},
 
 		{token.EOF, "\x00", 10, 12},
 	}

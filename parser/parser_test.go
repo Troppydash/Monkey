@@ -10,6 +10,27 @@ import (
 	"testing"
 )
 
+// Test the parsing of strings
+func TestStringLiteralExpression(t *testing.T) {
+	input := `"hello world"`
+
+	l := lexer.New(input, "testString")
+	p := New(l)
+	program := p.ParseProgram()
+	p.CheckParserErrors(t)
+
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	literal, ok := stmt.Expression.(*ast.StringLiteral)
+	if !ok {
+		t.Fatalf("expression not type *ast.StringLiteral. got=%T",
+			stmt.Expression)
+	}
+	if literal.Value != "hello world" {
+		t.Errorf("literal.Value not %q. got=%q",
+			"hello world", literal.Value)
+	}
+}
+
 func FormatFloat(t float64) string {
 	return strconv.FormatFloat(t, 'f', -1, 64)
 }

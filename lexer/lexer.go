@@ -1,6 +1,9 @@
 package lexer
 
-import "Monkey/token"
+import (
+	"Monkey/token"
+	"strings"
+)
 
 // Lexer Struct
 type Lexer struct {
@@ -158,6 +161,13 @@ func (l *Lexer) NextToken() token.Token {
 		} else {
 			tok = NewToken(token.GT, l.ch)
 		}
+	// TODO: Implement String parsing
+	case '"':
+		tok.Type = token.STRING
+		tok.Literal = l.ReadString('"')
+	case '\'':
+		tok.Type = token.STRING
+		tok.Literal = l.ReadString('\'')
 	case ';':
 		tok = NewToken(token.SEMICOLON, l.ch)
 	case '(':
@@ -281,4 +291,27 @@ func (l *Lexer) PeekChar() rune {
 	} else {
 		return rune(l.input[l.readPosition])
 	}
+}
+
+// Read a string with the terminator being the ending
+func (l *Lexer) ReadString(terminator rune) string {
+	position := l.position + 1
+	var prevChar rune
+	for {
+		prevChar = l.ch
+		l.ReadChar()
+		if l.ch == terminator || l.ch == 0 {
+			if prevChar != '\\' {
+				break
+			}
+		}
+	}
+	str := l.input[position:l.position]
+
+	// Parsing special charcters
+	str = strings.ReplaceAll(str, `\n`, "\n")
+	str = strings.ReplaceAll(str, `\t`, "\t")
+	str = strings.ReplaceAll(str, `\"`, "\"")
+	str = strings.ReplaceAll(str, `\'`, "'")
+	return str
 }

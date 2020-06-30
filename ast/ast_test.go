@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// Test the ast tostring method
 func TestToString(t *testing.T) {
 
 	if options.NicerToString {

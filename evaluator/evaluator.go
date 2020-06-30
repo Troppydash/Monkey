@@ -115,6 +115,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return ApplyFunction(node.Token, function, args)
 
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
 	}
 
 	return NULL

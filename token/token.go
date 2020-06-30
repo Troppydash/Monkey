@@ -51,6 +51,8 @@ const (
 	AND = "and"
 	OR  = "or"
 	XOR = "xor"
+
+	STRING = "STRING"
 )
 
 // The Type of a Token

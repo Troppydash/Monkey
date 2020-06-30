@@ -7,6 +7,24 @@ import (
 	"testing"
 )
 
+// Test Evaluating of Strings
+func TestStringLiteral(t *testing.T) {
+	input := `"Hello World!"`
+
+	evaluated := CheckEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not type *object.String. got=%T (%+v)",
+			evaluated, evaluated)
+	}
+
+	if str.Value != "Hello World!" {
+		t.Errorf("String has wrong value. got=%q",
+			str.Value)
+	}
+}
+
+// Test Closure
 func TestClosures(t *testing.T) {
 	input := `
 let newAdder = fn(x) {
