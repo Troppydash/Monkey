@@ -3,15 +3,51 @@ package evaluator
 import (
 	"Monkey/lexer"
 	"Monkey/object"
+	"Monkey/options"
 	"Monkey/parser"
 	"testing"
 )
+
+// Test Builtin functions
+func TestBuiltinFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`len("")`, 0},
+		{`len("four")`, 4},
+		{`len("hello world")`, 11},
+		{`len(1)`, "argument to `len` not supported. got INTEGER"},
+		{`len("one", "two")`, "wrong number of arguments. got=2, expected=1"},
+	}
+
+	for _, tt := range tests {
+		evaluated := CheckEval(tt.input)
+
+		switch expected := tt.expected.(type) {
+		case int:
+			CheckIntegerObject(t, evaluated, float64(expected))
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("object is not Error. got=%T (%+v)",
+					evaluated, evaluated)
+				continue
+			}
+			if errObj.Message != expected {
+				t.Errorf("wrong error message. expecte=%q, got=%q",
+					expected, errObj.Message)
+			}
+		}
+	}
+}
 
 // Test String +
 func TestStringConcatenation(t *testing.T) {
 	input := `
 'Hello' + ' ' + 'World!'
 `
+
 	evaluated := CheckEval(input)
 	str, ok := evaluated.(*object.String)
 	if !ok {
@@ -130,11 +166,11 @@ func TestErrorHandling(t *testing.T) {
 			"unknown operator: STRING - STRING",
 		},
 		{
-			"5 + true;",
+			"5 + true",
 			"type mismatch: INTEGER + BOOLEAN",
 		},
 		{
-			"5 + true; 5;",
+			"5 + true 5",
 			"type mismatch: INTEGER + BOOLEAN",
 		},
 		{
@@ -142,19 +178,19 @@ func TestErrorHandling(t *testing.T) {
 			"unknown operator: -BOOLEAN",
 		},
 		{
-			"true + false;",
+			"true + false",
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
 		{
-			"5; true + false; 5",
+			"5 true + false 5",
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
 		{
-			"if (10 > 1) { true + false; }",
+			"if (10 > 1) { true + false }",
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
 		{
-			`if 10 > 1 { if 10 > 1 { return true + false } return 1; }`,
+			`if 10 > 1 { if 10 > 1 { return true + false } return 1 }`,
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
 		{
@@ -163,6 +199,7 @@ func TestErrorHandling(t *testing.T) {
 		},
 	}
 
+	options.FatalErrors = true
 	for _, tt := range tests {
 		evaluated := CheckEval(tt.input)
 		errObj, ok := evaluated.(*object.Error)

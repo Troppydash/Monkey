@@ -105,6 +105,8 @@ func New(l *lexer.Lexer) *Parser {
 
 	// Setup Pratt Parsing Functions
 
+	// TODO: Setup assignment parsing and eval
+
 	// Setup Prefix Functions
 	p.prefixParseFns = make(map[token.TokenType]PrefixParseFn)
 	p.RegisterPrefix(token.IDENT, p.ParseIdentifier)

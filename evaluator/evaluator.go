@@ -3,6 +3,7 @@ package evaluator
 import (
 	"Monkey/ast"
 	"Monkey/object"
+	"Monkey/options"
 	"Monkey/parser"
 	"Monkey/token"
 	"fmt"
@@ -23,11 +24,26 @@ func NewError(data *token.TokenData, format string, a ...interface{}) *object.Er
 	}
 }
 
+// Modified here
 // Is the object an error
-func IsError(obj object.Object) bool {
-	if obj != nil {
-		return obj.Type() == object.ERROR_OBJ
+func CheckError(obj object.Object) bool {
+	if obj == nil {
+		return false
+
 	}
+	isError := obj.Type() == object.ERROR_OBJ
+
+	if isError {
+		// If Fatal errors is set, we stop the exec
+		if options.FatalErrors {
+			fmt.Println(obj.Inspect())
+			return true
+		} else {
+			// Else we treat error as a valid value
+			return false
+		}
+	}
+
 	return false
 }
 
@@ -55,7 +71,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return Eval(node.Expression, env)
 
 	case *ast.PrintExpressionStatement:
-		return EvalPrintExpressionStatement(node.Expression, env)
+		return EvalPrintExpressionStatement(node.Token, node.Expression, env)
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -65,7 +81,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
-		if IsError(right) {
+		if CheckError(right) {
 			return right
 		}
 		return EvalPrefixExpression(node.Operator, right, node.Token)
@@ -82,14 +98,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue, env)
-		if IsError(val) {
+		if CheckError(val) {
 			return val
 		}
 		return &object.ReturnValue{Value: val}
 
 	case *ast.LetStatement:
 		val := Eval(node.Value, env)
-		if IsError(val) {
+		if CheckError(val) {
 			return val
 		}
 
@@ -107,12 +123,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.CallExpression:
 		function := Eval(node.Function, env)
-		if IsError(function) {
+		if CheckError(function) {
 			return function
 		}
 
 		args := EvalExpression(node.Arguments, env)
-		if len(args) == 1 && IsError(args[0]) {
+		if len(args) == 1 && CheckError(args[0]) {
 			return args[0]
 		}
 		return ApplyFunction(node.Token, function, args)
@@ -126,14 +142,19 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 // Create a function and eval it
 func ApplyFunction(token token.Token, function object.Object, args []object.Object) object.Object {
-	fn, ok := function.(*object.Function)
-	if !ok {
-		return NewError(token.ToTokenData(), "not a function: %s", function.Type())
-	}
+	switch fn := function.(type) {
+	case *object.Function:
+		extendedEnv := ExtendFunctionEnv(fn, args)
+		evaluated := Eval(fn.Body, extendedEnv)
+		return UnwrapReturnValue(evaluated)
 
-	extendedEnv := ExtendFunctionEnv(fn, args)
-	evaluated := Eval(fn.Body, extendedEnv)
-	return UnwrapReturnValue(evaluated)
+	case *object.Builtin:
+		return fn.Fn(token, args...)
+
+	default:
+		return NewError(token.ToTokenData(), "not a function: %s", function.Type())
+
+	}
 }
 
 // Unwrap the return value for an object
@@ -163,7 +184,7 @@ func EvalExpression(arguments []ast.Expression, env *object.Environment) []objec
 
 	for _, e := range arguments {
 		evaluated := Eval(e, env)
-		if IsError(evaluated) {
+		if CheckError(evaluated) {
 			return []object.Object{evaluated}
 		}
 		result = append(result, evaluated)
@@ -172,13 +193,17 @@ func EvalExpression(arguments []ast.Expression, env *object.Environment) []objec
 	return result
 }
 
-// Fetch the value from env
+// Fetch the value from env and return it
 func EvalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
-	val, ok := env.Get(node.Value)
-	if !ok {
-		return NewError(node.Token.ToTokenData(), "identifier not found: %s", node.Value)
+	if val, ok := env.Get(node.Value); ok {
+		return val
 	}
-	return val
+
+	if builtin, ok := builtins[node.Value]; ok {
+		return builtin
+	}
+
+	return NewError(node.Token.ToTokenData(), "identifier not found: %s", node.Value)
 }
 
 // Eval a block statement
@@ -202,7 +227,7 @@ func EvalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 // Eval If Expression
 func EvalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
 	condition := Eval(ie.Condition, env)
-	if IsError(condition) {
+	if CheckError(condition) {
 		return condition
 	}
 
@@ -220,7 +245,7 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 	operator := node.Operator
 	left := Eval(node.Left, env)
 
-	if IsError(left) {
+	if CheckError(left) {
 		return left
 	}
 
@@ -231,14 +256,14 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 		return EvalOrExpression(left, node.Right, env)
 	case token.XOR:
 		right := Eval(node.Right, env)
-		if IsError(right) {
+		if CheckError(right) {
 			return right
 		}
 		return NativeBoolToBooleanObject(IsTruthful(left) != IsTruthful(right))
 	}
 
 	right := Eval(node.Right, env)
-	if IsError(right) {
+	if CheckError(right) {
 		return right
 	}
 
@@ -262,6 +287,7 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 	}
 }
 
+// All string operators
 func EvalStringInfixExpression(operator string, left object.Object, right object.Object, token token.Token) object.Object {
 	switch operator {
 	case "+":
@@ -304,6 +330,23 @@ func EvalStringInfixExpression(operator string, left object.Object, right object
 				return &object.String{Value: out.String()}
 			}
 		}
+	case "==":
+		{
+			if leftVal, ok := left.(*object.String); ok {
+				if rightVal, ok := right.(*object.String); ok {
+					return NativeBoolToBooleanObject(leftVal.Value == rightVal.Value)
+				}
+			}
+		}
+	case "!=":
+		{
+			if leftVal, ok := left.(*object.String); ok {
+				if rightVal, ok := right.(*object.String); ok {
+					return NativeBoolToBooleanObject(leftVal.Value != rightVal.Value)
+				}
+			}
+		}
+
 	}
 
 	return NewError(token.ToTokenData(), "unknown operator: %s %s %s",
@@ -416,10 +459,11 @@ func NativeBoolToBooleanObject(value bool) object.Object {
 }
 
 // Eval Print ExpressionStmt
-func EvalPrintExpressionStatement(exp ast.Expression, env *object.Environment) object.Object {
+func EvalPrintExpressionStatement(token token.Token, exp ast.Expression, env *object.Environment) object.Object {
 	result := Eval(exp, env)
-	fmt.Println(result.Inspect())
-	return result
+	builtins["writeLine"].Fn(token, result)
+	//fmt.Println(result.Inspect())
+	return NULL
 }
 
 // Eval Statements

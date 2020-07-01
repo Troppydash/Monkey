@@ -17,6 +17,7 @@ const (
 	ERROR_OBJ        = "ERROR"        // error
 	FUNCTION_OBJ     = "FUNCTION"     // fn
 	STRING_OBJ       = "STRING"       // ""
+	BUILTIN_OBJ      = "BUILTIN"      // Builtin Functions
 )
 
 // The type of the object
@@ -123,4 +124,19 @@ func (s *String) Type() ObjectType {
 }
 func (s *String) Inspect() string {
 	return s.Value
+}
+
+// Builtin function type
+type BuiltinFunction func(token token.Token, args ...Object) Object
+
+// Builtin function wrapper
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() ObjectType {
+	return BUILTIN_OBJ
+}
+func (b *Builtin) Inspect() string {
+	return "builtin function"
 }

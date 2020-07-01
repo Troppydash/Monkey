@@ -161,7 +161,6 @@ func (l *Lexer) NextToken() token.Token {
 		} else {
 			tok = NewToken(token.GT, l.ch)
 		}
-	// TODO: Implement String parsing
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.ReadString('"')
