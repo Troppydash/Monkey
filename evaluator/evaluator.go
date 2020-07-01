@@ -3,8 +3,10 @@ package evaluator
 import (
 	"Monkey/ast"
 	"Monkey/object"
+	"Monkey/parser"
 	"Monkey/token"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -243,6 +245,9 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return EvalIntegerInfixExpression(operator, left, right, node.Token)
+
+	case left.Type() == object.STRING_OBJ || right.Type() == object.STRING_OBJ:
+		return EvalStringInfixExpression(operator, left, right, node.Token)
 	case operator == "==":
 		return NativeBoolToBooleanObject(IsTruthful(left) == IsTruthful(right))
 	case operator == "!=":
@@ -255,6 +260,54 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 		return NewError(node.Token.ToTokenData(), "unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
 	}
+}
+
+func EvalStringInfixExpression(operator string, left object.Object, right object.Object, token token.Token) object.Object {
+	switch operator {
+	case "+":
+		{
+			// TODO This can be improved
+			// Left is int, right is string
+			if leftVal, ok := left.(*object.String); ok {
+				if rightVal, ok := right.(*object.String); ok {
+					return &object.String{
+						Value: leftVal.Value + rightVal.Value,
+					}
+				} else if rightVal, ok := right.(*object.Integer); ok {
+					// Left is string, right is int
+					leftVal := left.(*object.String).Value
+					return &object.String{
+						Value: leftVal + parser.FormatFloat(rightVal.Value),
+					}
+				}
+			} else if leftVal, ok := left.(*object.Integer); ok {
+				rightVal := right.(*object.String).Value
+				return &object.String{
+					Value: parser.FormatFloat(leftVal.Value) + rightVal,
+				}
+			} else {
+				// Error
+			}
+		}
+	case "*":
+		{
+			if rightVal, ok := right.(*object.Integer); ok {
+				leftVal := left.(*object.String)
+				var out strings.Builder
+
+				amount := int(rightVal.Value)
+
+				for i := 0; i < amount; i++ {
+					out.WriteString(leftVal.Value)
+				}
+
+				return &object.String{Value: out.String()}
+			}
+		}
+	}
+
+	return NewError(token.ToTokenData(), "unknown operator: %s %s %s",
+		left.Type(), operator, right.Type())
 }
 
 // Eval Or Expression

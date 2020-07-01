@@ -614,3 +614,7 @@ func (p *Parser) ParseStringLiteral() ast.Expression {
 		Value: p.currentToken.Literal,
 	}
 }
+
+func FormatFloat(t float64) string {
+	return strconv.FormatFloat(t, 'f', -1, 64)
+}

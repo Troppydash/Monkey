@@ -7,6 +7,23 @@ import (
 	"testing"
 )
 
+// Test String +
+func TestStringConcatenation(t *testing.T) {
+	input := `
+'Hello' + ' ' + 'World!'
+`
+	evaluated := CheckEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not type *object.String. got=%T (%+v)",
+			evaluated, evaluated)
+	}
+	if str.Value != "Hello World!" {
+		t.Errorf("String contains the wrong value. got=%q",
+			str.Value)
+	}
+}
+
 // Test Evaluating of Strings
 func TestStringLiteral(t *testing.T) {
 	input := `"Hello World!"`
@@ -108,6 +125,10 @@ func TestErrorHandling(t *testing.T) {
 		input           string
 		expectedMessage string
 	}{
+		{
+			`"Hello" - 'World'`,
+			"unknown operator: STRING - STRING",
+		},
 		{
 			"5 + true;",
 			"type mismatch: INTEGER + BOOLEAN",

@@ -5,7 +5,6 @@ import (
 	"Monkey/lexer"
 	"Monkey/options"
 	"fmt"
-	"strconv"
 	"strings"
 	"testing"
 )
@@ -29,10 +28,6 @@ func TestStringLiteralExpression(t *testing.T) {
 		t.Errorf("literal.Value not %q. got=%q",
 			"hello world", literal.Value)
 	}
-}
-
-func FormatFloat(t float64) string {
-	return strconv.FormatFloat(t, 'f', -1, 64)
 }
 
 func TestFloatingPointNumbers(t *testing.T) {
