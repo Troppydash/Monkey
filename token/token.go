@@ -68,6 +68,7 @@ type Token struct {
 	Filename     string
 }
 
+// Error reporting data
 type TokenData struct {
 	Filename     string
 	RowNumber    int64

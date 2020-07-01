@@ -11,6 +11,8 @@ import (
 )
 
 var builtins = map[string]*object.Builtin{
+	// TODO: Math Functions
+
 	// Array
 	"len": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
@@ -89,7 +91,7 @@ var builtins = map[string]*object.Builtin{
 		},
 	},
 
-	// Casting
+	// Checking
 	"error": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
@@ -104,7 +106,6 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
-
 	"null": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
@@ -115,6 +116,7 @@ var builtins = map[string]*object.Builtin{
 		},
 	},
 
+	// Casting
 	"bool": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {

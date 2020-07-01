@@ -248,10 +248,29 @@ func IsLetter(ch rune) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch == '?'
 }
 
+// Eats up the entire line
+func (l *Lexer) SkipLine() {
+	for l.ch != '\n' && l.ch != '\r' && l.ch != '\x00' {
+		l.ReadChar()
+	}
+	l.ReadChar()
+}
+
 // Eat up all the whitespace
 func (l *Lexer) SkipWhitespace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
-		l.ReadChar()
+	for {
+		if l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+			l.ReadChar()
+			continue
+		}
+		if l.ch == '/' && l.PeekChar() == '/' {
+			l.ReadChar()
+			l.ReadChar()
+			l.SkipLine()
+			continue
+		}
+
+		break
 	}
 }
 

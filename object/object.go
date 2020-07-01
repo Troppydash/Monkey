@@ -74,6 +74,7 @@ func (rv *ReturnValue) Inspect() string {
 	return rv.Value.Inspect()
 }
 
+// Error type
 type Error struct {
 	Message string
 	*token.TokenData
