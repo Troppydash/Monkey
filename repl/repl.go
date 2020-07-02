@@ -87,6 +87,14 @@ func ParseOptions(out io.Writer, line string) {
 	case "--off nicer":
 		options.NicerToString = false
 		io.WriteString(out, "Disabled Nicer ToString")
+
+	case "--on fatalErrors":
+		options.FatalErrors = true
+		io.WriteString(out, "Enabled FatalErrors")
+	case "--off fatalErrors":
+		options.FatalErrors = false
+		io.WriteString(out, "Disabled FatalErrors")
+
 	default:
 		io.WriteString(out, "No options matching your request has been found")
 	}

@@ -34,6 +34,7 @@ if (5 < 10) {
 'foo bar'
 'foo\n\t\"\':)'
 "hello \"world\""
+[1, 2]
 `
 
 	// What the Parser/Lexer should return
@@ -138,6 +139,12 @@ if (5 < 10) {
 		{token.STRING, "foo bar", 10, 11},
 		{token.STRING, "foo\n\t\"':)", 10, 11},
 		{token.STRING, `hello "world"`, 10, 11},
+
+		{token.LBRACKET, "[", 0, 0},
+		{token.INT, "1", 0, 0},
+		{token.COMMA, ",", 0, 0},
+		{token.INT, "2", 0, 0},
+		{token.RBRACKET, "]", 0, 0},
 
 		{token.EOF, "\x00", 10, 12},
 	}

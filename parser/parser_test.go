@@ -9,6 +9,114 @@ import (
 	"testing"
 )
 
+func TestParsingIndexRanges(t *testing.T) {
+	tests := []struct {
+		input string
+		left  string
+		start interface{}
+		end   interface{}
+	}{
+		{`myArray[2:10]`, "myArray", 2, 10},
+		{`myArray[:10]`, "myArray", nil, 10},
+		{`myArray[2:]`, "myArray", 2, nil},
+		{`myArray[:]`, "myArray", nil, nil},
+		{`myArray[2]`, "myArray", 2, nil},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input, "testRange")
+		p := New(l)
+		program := p.ParseProgram()
+		p.CheckParserErrors(t)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		indexExp, ok := stmt.Expression.(*ast.IndexExpression)
+		if !ok {
+			t.Fatalf("exp not type *ast.IndexExpression. got=%T",
+				stmt.Expression)
+		}
+
+		if !CheckIdentifier(t, indexExp.Left, tt.left) {
+			return
+		}
+
+		if tt.start == nil {
+			if indexExp.Start != nil {
+				t.Fatalf("indexExp start is not nil. got=%T", indexExp.Start)
+			}
+		} else if val, ok := tt.start.(int); ok {
+			if !CheckIntegerLiteral(t, indexExp.Start, float64(val)) {
+				return
+			}
+		}
+
+		if tt.end == nil {
+			if indexExp.End != nil {
+				t.Fatalf("indexExp end is not nil. got=%T", indexExp.End)
+			}
+		} else if val, ok := tt.end.(int); ok {
+			if !CheckIntegerLiteral(t, indexExp.End, float64(val)) {
+				return
+			}
+		}
+	}
+
+}
+
+// Test Indexing parsing
+func TestParsingIndexExpression(t *testing.T) {
+	input := `myArray[1 + 2:10]`
+
+	l := lexer.New(input, "testArray")
+	p := New(l)
+	program := p.ParseProgram()
+	p.CheckParserErrors(t)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	indexExp, ok := stmt.Expression.(*ast.IndexExpression)
+	if !ok {
+		t.Fatalf("exp not type *ast.IndexExpression. got=%T",
+			stmt.Expression)
+	}
+
+	if !CheckIdentifier(t, indexExp.Left, "myArray") {
+		return
+	}
+
+	if !CheckInfixExpression(t, indexExp.Start, 1, "+", 2) {
+		return
+	}
+
+	if !CheckIntegerLiteral(t, indexExp.End, 10) {
+		return
+	}
+}
+
+// Test parsing the array
+func TestParsingArrayLiterals(t *testing.T) {
+	input := `[1, 2 * 3, 5 - 3,]`
+
+	l := lexer.New(input, "testArray")
+	p := New(l)
+	program := p.ParseProgram()
+	p.CheckParserErrors(t)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	array, ok := stmt.Expression.(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("exp not type *ast.ArrayLiteral. got=%T", stmt.Expression)
+	}
+
+	if len(array.Elements) != 3 {
+		t.Fatalf("array doesn't contain enough elements. got=%d",
+			len(array.Elements))
+	}
+
+	CheckIntegerLiteral(t, array.Elements[0], 1)
+	CheckInfixExpression(t, array.Elements[1], 2, "*", 3)
+	CheckInfixExpression(t, array.Elements[2], 5, "-", 3)
+}
+
 // Test the parsing of strings
 func TestStringLiteralExpression(t *testing.T) {
 	input := `"hello world"`
@@ -610,6 +718,14 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{
 			"1 or 5 and 3 > 8",
 			"[(((1) or (5)) and ((3) > (8)))]",
+		},
+		{
+			"a * [1, 2, 3, 4][b * c] * d",
+			"[(((a) * ([(1), (2), (3), (4)][((b) * (c))])) * (d))]",
+		},
+		{
+			"add(a * b[2], b[1], 2 * [1, 2][1])",
+			"[((add)(((a) * ((b)[(2)])), ((b)[(1)]), ((2) * ([(1), (2)][(1)]))))]",
 		},
 	}
 

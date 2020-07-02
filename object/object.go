@@ -84,7 +84,7 @@ func (e *Error) Type() ObjectType {
 	return ERROR_OBJ
 }
 func (e *Error) Inspect() string {
-	return fmt.Sprintf("ERROR: %s, at %d:%d, in file %s",
+	return fmt.Sprintf("Runtime Error: %s, at %d:%d, in file %s\n",
 		e.Message, e.RowNumber, e.ColumnNumber, e.Filename)
 }
 

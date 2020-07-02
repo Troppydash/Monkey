@@ -29,7 +29,6 @@ func NewError(data *token.TokenData, format string, a ...interface{}) *object.Er
 func CheckError(obj object.Object) bool {
 	if obj == nil {
 		return false
-
 	}
 	isError := obj.Type() == object.ERROR_OBJ
 

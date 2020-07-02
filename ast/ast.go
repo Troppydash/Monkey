@@ -376,6 +376,71 @@ func (sl *StringLiteral) ToString() string {
 	return out.String()
 }
 
+// Array object
+type ArrayLiteral struct {
+	Token    token.Token
+	Elements []Expression
+}
+
+func (al *ArrayLiteral) ExpressionNode() {}
+func (al *ArrayLiteral) TokenLiteral() string {
+	return al.Token.Literal
+}
+func (al *ArrayLiteral) ToString() string {
+	var out strings.Builder
+
+	var elements []string
+	for _, el := range al.Elements {
+		elements = append(elements, el.ToString())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+
+	return out.String()
+}
+
+// Indexing Array
+// [1:2]
+// [1:]
+// [:2]
+// [:]
+// [1]
+type IndexExpression struct {
+	Token token.Token
+	Left  Expression
+
+	Start    Expression
+	End      Expression
+	HasRange bool
+}
+
+func (ie *IndexExpression) ExpressionNode() {}
+func (ie *IndexExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+func (ie *IndexExpression) ToString() string {
+	var out strings.Builder
+
+	AddOpeningBrace(&out)
+	out.WriteString(ie.Left.ToString())
+	out.WriteString("[")
+	if ie.Start != nil {
+		out.WriteString(ie.Start.ToString())
+	}
+	if ie.HasRange {
+		out.WriteString(":")
+	}
+	if ie.End != nil {
+		out.WriteString(ie.End.ToString())
+	}
+	out.WriteString("]")
+	AddClosingBrace(&out)
+
+	return out.String()
+}
+
 func AddOptionalString(out *strings.Builder, str string) {
 	if !options.NicerToString {
 		out.WriteString(str)

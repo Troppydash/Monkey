@@ -3,6 +3,7 @@ package parser
 import (
 	"Monkey/ast"
 	"Monkey/lexer"
+	"Monkey/options"
 	"Monkey/token"
 	"fmt"
 	"math"
@@ -10,7 +11,7 @@ import (
 )
 
 // TODO: Implement while and for loop
-
+// TODO: Implement Namespaces
 const float64EqualityThreshold = 1e-9
 
 func AlmostEqual(left float64, right float64) bool {
@@ -29,6 +30,7 @@ const (
 	PRODUCT // * or / or %
 	PREFIX  // !X or -X
 	CALL    // foobar()
+	INDEX   // [x]
 )
 
 // A Map Contains a Token to Precedences key value pair
@@ -48,6 +50,7 @@ var precedences = map[token.TokenType]int{
 	token.ASTERISK: PRODUCT,
 	token.PERCENT:  PRODUCT,
 	token.LPAREN:   CALL,
+	token.LBRACKET: INDEX,
 }
 
 // Peek the precedence of the next token in the parser
@@ -129,6 +132,8 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.RegisterPrefix(token.STRING, p.ParseStringLiteral)
 
+	p.RegisterPrefix(token.LBRACKET, p.ParseArrayLiteral)
+
 	// Setup Infix Functions
 	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
 	p.RegisterInfix(token.PLUS, p.ParseInfixExpression)
@@ -148,6 +153,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterInfix(token.AND, p.ParseInfixExpression)
 	p.RegisterInfix(token.OR, p.ParseInfixExpression)
 	p.RegisterInfix(token.XOR, p.ParseInfixExpression)
+
+	p.RegisterInfix(token.LBRACKET, p.ParseIndexExpression)
 
 	return p
 }
@@ -183,6 +190,15 @@ func (p *Parser) ParseProgram() *ast.Program {
 		}
 		// Advance pointer
 		p.NextToken()
+	}
+
+	if options.FatalErrors {
+		if p.HasError() {
+			for _, err := range p.Errors() {
+				fmt.Printf("Parser Error: %s, at %d:%d, in file %s\n",
+					err.Message, err.RowNumber, err.ColumnNumber, err.Filename)
+			}
+		}
 	}
 
 	return program
@@ -575,7 +591,7 @@ func (p *Parser) ParseCallExpression(function ast.Expression) ast.Expression {
 		Token:    p.currentToken,
 		Function: function,
 	}
-	exp.Arguments = p.ParseCallArguments()
+	exp.Arguments = p.ParseExpressionList(token.RPAREN)
 	return exp
 }
 
@@ -615,6 +631,76 @@ func (p *Parser) ParseStringLiteral() ast.Expression {
 		Token: p.currentToken,
 		Value: p.currentToken.Literal,
 	}
+}
+
+// Parse an array expression
+func (p *Parser) ParseArrayLiteral() ast.Expression {
+	array := &ast.ArrayLiteral{Token: p.currentToken}
+
+	array.Elements = p.ParseExpressionList(token.RBRACKET)
+
+	return array
+}
+
+// Parse a comma separated expression
+func (p *Parser) ParseExpressionList(end token.TokenType) []ast.Expression {
+	var list []ast.Expression
+
+	if p.PeekTokenIs(token.COMMA) {
+		p.NextToken()
+	}
+	if p.PeekTokenIs(end) {
+		p.NextToken()
+		return list
+	}
+
+	p.NextToken()
+	list = append(list, p.ParseExpression(LOWEST))
+
+	for p.PeekTokenIs(token.COMMA) {
+		p.NextToken()
+		if p.PeekTokenIs(end) {
+			break
+		}
+
+		p.NextToken()
+		list = append(list, p.ParseExpression(LOWEST))
+	}
+
+	if !p.ExpectPeek(end) {
+		return nil
+	}
+
+	return list
+}
+
+// Parse indexing expression
+func (p *Parser) ParseIndexExpression(left ast.Expression) ast.Expression {
+	exp := &ast.IndexExpression{Token: p.currentToken, Left: left}
+
+	// Empty First
+	if p.PeekTokenIs(token.COLON) {
+		exp.Start = nil
+	} else {
+		p.NextToken()
+		exp.Start = p.ParseExpression(LOWEST)
+	}
+
+	if p.PeekTokenIs(token.COLON) {
+		exp.HasRange = true
+		p.NextToken()
+
+		if !p.PeekTokenIs(token.RBRACKET) {
+			p.NextToken()
+			exp.End = p.ParseExpression(LOWEST)
+		}
+	}
+
+	if !p.ExpectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
 }
 
 func FormatFloat(t float64) string {
