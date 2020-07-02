@@ -32,6 +32,12 @@ var builtins = map[string]*object.Builtin{
 	},
 
 	// IO
+	"format": {
+		// TODO: Implem
+		Fn: func(token token.Token, args ...object.Object) object.Object {
+			return NULL
+		},
+	},
 	"write": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			var out []string
@@ -64,7 +70,7 @@ var builtins = map[string]*object.Builtin{
 			reader := bufio.NewReader(os.Stdin)
 
 			if len(args) == 1 {
-				fmt.Print(args[0].Inspect() + "> ")
+				fmt.Print(args[0].Inspect() + " > ")
 			}
 			text, _ := reader.ReadString('\n')
 			return &object.String{
@@ -82,7 +88,7 @@ var builtins = map[string]*object.Builtin{
 			reader := bufio.NewReader(os.Stdin)
 
 			if len(args) == 1 {
-				fmt.Println(args[0].Inspect() + "> ")
+				fmt.Println(args[0].Inspect() + " > ")
 			}
 			text, _ := reader.ReadString('\n')
 			return &object.String{
@@ -92,7 +98,7 @@ var builtins = map[string]*object.Builtin{
 	},
 
 	// Checking
-	"error": {
+	"error?": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return TRUE
@@ -106,7 +112,7 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
-	"null": {
+	"null?": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return FALSE
@@ -117,7 +123,7 @@ var builtins = map[string]*object.Builtin{
 	},
 
 	// Casting
-	"bool": {
+	"bool!": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=1",
@@ -133,7 +139,7 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
-	"string": {
+	"string!": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) > 1 {
 				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=1",
@@ -157,7 +163,7 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
-	"number": {
+	"number!": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=1",

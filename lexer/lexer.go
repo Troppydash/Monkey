@@ -251,7 +251,7 @@ func (l *Lexer) ReadIdentifier() string {
 // If a rune is a valid letter
 func IsLetter(ch rune) bool {
 	// [a-zA-Z_\?]
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch == '?'
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch == '?' || ch == '!'
 }
 
 // Eats up the entire line

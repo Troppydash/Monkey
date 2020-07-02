@@ -18,6 +18,7 @@ const (
 	FUNCTION_OBJ     = "FUNCTION"     // fn
 	STRING_OBJ       = "STRING"       // ""
 	BUILTIN_OBJ      = "BUILTIN"      // Builtin Functions
+	ARRAY_OBJ        = "ARRAY"        // Arrays
 )
 
 // The type of the object
