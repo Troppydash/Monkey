@@ -10,6 +10,25 @@ import (
 	"strings"
 )
 
+// Argument not supported error
+func ArgumentNotSupported(method string, typ interface{}, token token.Token) *object.Error {
+	return NewError(token.ToTokenData(), "argument to `%s` not supported. got %s",
+		method, typ)
+}
+
+// Incorrect argument amount error
+func WrongArgumentsAmount(method string, got interface{}, expected interface{}, token token.Token) *object.Error {
+	return NewError(token.ToTokenData(), "wrong number of arguments for method `%s`. got=%d, expected=%s",
+		method, got, expected)
+}
+
+// Prohibited Value error
+func ProhibitedValue(method string, value interface{}, reason interface{}, token token.Token) *object.Error {
+	return NewError(token.ToTokenData(), "prohibited value of arguments for method `%s`. got=%v, reason=%s",
+		method, value, reason)
+}
+
+// TODO: Optimizations
 var builtins = map[string]*object.Builtin{
 	// TODO: Math Functions
 
@@ -17,8 +36,8 @@ var builtins = map[string]*object.Builtin{
 	"len": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
-				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=1",
-					len(args))
+				// TODO
+				return WrongArgumentsAmount("len", len(args), "1", token)
 			}
 
 			switch arg := args[0].(type) {
@@ -27,15 +46,94 @@ var builtins = map[string]*object.Builtin{
 			case *object.Array:
 				return &object.Integer{Value: float64(len(arg.Elements))}
 			default:
-				return NewError(token.ToTokenData(), "argument to `len` not supported. got %s",
-					args[0].Type())
+				return ArgumentNotSupported("len", args[0].Type(), token)
 			}
 		},
 	},
 	"range": {
-		// TODO: Implem
 		Fn: func(token token.Token, args ...object.Object) object.Object {
-			return NULL
+
+			switch len(args) {
+
+			case 0:
+				return &object.Array{Elements: []object.Object{}}
+			case 1:
+				amount, ok := args[0].(*object.Integer)
+				if !ok {
+					return ArgumentNotSupported("range", args[0].Type(), token)
+				}
+
+				var eles []object.Object
+				for i := 0; i < int(amount.Value); i++ {
+					eles = append(eles, &object.Integer{Value: float64(i)})
+				}
+
+				return &object.Array{Elements: eles}
+
+			case 2:
+				amount, ok := args[1].(*object.Integer)
+				if !ok {
+					return ArgumentNotSupported("range", args[0].Type(), token)
+				}
+
+				starting, ok := args[0].(*object.Integer)
+				if !ok {
+					return ArgumentNotSupported("range", args[0].Type(), token)
+				}
+
+				var eles []object.Object
+				if amount.Value < starting.Value {
+					for i := starting.Value; i > amount.Value; i -= 1 {
+						eles = append(eles, &object.Integer{Value: i})
+					}
+				} else {
+					for i := starting.Value; i < amount.Value; i += 1 {
+						eles = append(eles, &object.Integer{Value: i})
+					}
+				}
+
+				return &object.Array{Elements: eles}
+
+			case 3:
+				skip, ok := args[2].(*object.Integer)
+				if !ok {
+					return ArgumentNotSupported("range", args[2].Type(), token)
+				}
+				if skip.Value == 0 {
+					return ProhibitedValue("range", skip.Value, "range would loop forever", token)
+				}
+
+				amount, ok := args[1].(*object.Integer)
+				if !ok {
+					return ArgumentNotSupported("range", args[1].Type(), token)
+				}
+
+				starting, ok := args[0].(*object.Integer)
+				if !ok {
+					return ArgumentNotSupported("range", args[0].Type(), token)
+				}
+
+				if skip.Value < 0 {
+					return ProhibitedValue("range", skip.Value, "skip cannot be negative", token)
+				}
+
+				var eles []object.Object
+
+				if amount.Value < starting.Value {
+					for i := starting.Value; i > amount.Value; i -= skip.Value {
+						eles = append(eles, &object.Integer{Value: i})
+					}
+				} else {
+					for i := starting.Value; i < amount.Value; i += skip.Value {
+						eles = append(eles, &object.Integer{Value: i})
+					}
+				}
+
+				return &object.Array{Elements: eles}
+
+			default:
+				return WrongArgumentsAmount("range", len(args), "1-3", token)
+			}
 		},
 	},
 
