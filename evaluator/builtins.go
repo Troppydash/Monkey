@@ -80,9 +80,10 @@ var builtins = map[string]*object.Builtin{
 			if len(args) == 1 {
 				fmt.Print(args[0].Inspect() + " > ")
 			}
-			text, _ := reader.ReadString('\n')
+
+			text, _, _ := reader.ReadLine()
 			return &object.String{
-				Value: text[:len(text)-1],
+				Value: string(text),
 			}
 		},
 	},
@@ -98,9 +99,9 @@ var builtins = map[string]*object.Builtin{
 			if len(args) == 1 {
 				fmt.Println(args[0].Inspect() + " > ")
 			}
-			text, _ := reader.ReadString('\n')
+			text, _, _ := reader.ReadLine()
 			return &object.String{
-				Value: text[:len(text)-1],
+				Value: string(text),
 			}
 		},
 	},
