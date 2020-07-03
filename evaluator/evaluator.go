@@ -109,8 +109,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 
 		env.Store(node.Name.Value, val)
-	// Uncomment for let to return a value
-	//return val
 
 	case *ast.Identifier:
 		return EvalIdentifier(node, env)
@@ -126,7 +124,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return function
 		}
 
-		args := EvalExpression(node.Arguments, env)
+		args := EvalExpressions(node.Arguments, env)
 		if len(args) == 1 && CheckError(args[0]) {
 			return args[0]
 		}
@@ -134,9 +132,120 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
+
+	case *ast.ArrayLiteral:
+		elements := EvalExpressions(node.Elements, env)
+		if len(elements) == 1 && CheckError(elements[0]) {
+			return elements[0]
+		}
+		return &object.Array{
+			Elements: elements,
+		}
+
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if CheckError(left) {
+			return left
+		}
+
+		start := Eval(node.Start, env)
+		if CheckError(start) {
+			return start
+		}
+
+		end := Eval(node.End, env)
+		if CheckError(end) {
+			return end
+		}
+
+		return EvalIndexExpression(left, start, end, node.Token, node.HasRange)
 	}
 
 	return NULL
+}
+
+// Eval Indexing
+func EvalIndexExpression(exp object.Object, start object.Object, end object.Object, token token.Token, hasRange bool) object.Object {
+	switch exp.(type) {
+	case *object.Array:
+		return EvalArrayIndexExpression(exp, start, end, token, hasRange)
+	default:
+		return NewError(token.ToTokenData(), "index operator not support for `%s`", exp.Type())
+	}
+}
+
+func IsIndexInRange(index int64, length int64) bool {
+	return index >= 0 && index < length
+}
+
+// Eval Array indexing
+func EvalArrayIndexExpression(array object.Object, start object.Object, end object.Object, token token.Token, hasRange bool) object.Object {
+	arrayObj := array.(*object.Array)
+	length := int64(len(arrayObj.Elements))
+
+	// Four Options
+	switch {
+	case !hasRange:
+		s := int64(start.(*object.Integer).Value)
+		if s < 0 {
+			s = length + s
+		}
+		if !IsIndexInRange(s, length) {
+			return NewError(token.ToTokenData(), "index out of range. got=%d, expected=%d-%d",
+				s, 0, length-1)
+		}
+		return arrayObj.Elements[s]
+
+	case hasRange:
+
+		{
+			var startIndex int64
+			var endIndex int64
+
+			switch {
+			case start.Type() == object.INTEGER_OBJ && end.Type() == object.NULL_OBJ:
+				startIndex = int64(start.(*object.Integer).Value)
+				endIndex = length
+			case start.Type() == object.NULL_OBJ && end.Type() == object.INTEGER_OBJ:
+				startIndex = 0
+				endIndex = int64(end.(*object.Integer).Value)
+			case start.Type() == object.INTEGER_OBJ && end.Type() == object.INTEGER_OBJ:
+				startIndex = int64(start.(*object.Integer).Value)
+				endIndex = int64(end.(*object.Integer).Value)
+			default:
+				startIndex = 0
+				endIndex = length
+			}
+
+			if startIndex < 0 {
+				startIndex = length + startIndex
+			}
+			if endIndex < 0 {
+				endIndex = length + endIndex
+			}
+
+			if !IsIndexInRange(startIndex, length+1) {
+				return NewError(token.ToTokenData(), "startIndex out of range. got=%d, expected=%d-%d",
+					startIndex, 0, length-1)
+			}
+			if !IsIndexInRange(endIndex, length+1) {
+				return NewError(token.ToTokenData(), "endIndex out of range. got=%d, expected=%d-%d",
+					endIndex, 0, length-1)
+			}
+
+			if startIndex > endIndex {
+				return NewError(token.ToTokenData(), "startIndex larger than endIndex. startIndex=%d, endIndex=%d",
+					startIndex, endIndex)
+			}
+
+			return &object.Array{
+				Elements: arrayObj.Elements[startIndex:endIndex],
+			}
+		}
+
+	default:
+		return NewError(token.ToTokenData(), "parser probably failed, this should never happen")
+	}
 }
 
 // Create a function and eval it
@@ -178,7 +287,7 @@ func ExtendFunctionEnv(function *object.Function, args []object.Object) *object.
 }
 
 // Eval a list of expressions
-func EvalExpression(arguments []ast.Expression, env *object.Environment) []object.Object {
+func EvalExpressions(arguments []ast.Expression, env *object.Environment) []object.Object {
 	var result []object.Object
 
 	for _, e := range arguments {

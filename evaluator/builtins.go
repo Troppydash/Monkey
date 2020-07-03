@@ -24,10 +24,18 @@ var builtins = map[string]*object.Builtin{
 			switch arg := args[0].(type) {
 			case *object.String:
 				return &object.Integer{Value: float64(len(arg.Value))}
+			case *object.Array:
+				return &object.Integer{Value: float64(len(arg.Elements))}
 			default:
 				return NewError(token.ToTokenData(), "argument to `len` not supported. got %s",
 					args[0].Type())
 			}
+		},
+	},
+	"range": {
+		// TODO: Implem
+		Fn: func(token token.Token, args ...object.Object) object.Object {
+			return NULL
 		},
 	},
 

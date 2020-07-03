@@ -8,6 +8,144 @@ import (
 	"testing"
 )
 
+// Test Indexing
+func TestArrayIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{
+			`[1, 2, 3][0]`,
+			1,
+		},
+		{
+			`[1, 2, 3][1]`,
+			2,
+		},
+		{
+			`[1, 2, 3][2]`,
+			3,
+		},
+		{
+			`let i = 0; [1][i]`,
+			1,
+		},
+		{
+			`[1, 2, 3][1 + 1]`,
+			3,
+		},
+		{
+			"let myArray = [1, 2, 3] myArray[2]",
+			3,
+		},
+		{
+			"let myArray = [1, 2, 3] myArray[0] + myArray[1] + myArray[2]",
+			6,
+		},
+		{
+			"let myArray = [1, 2, 3] let i = myArray[0] myArray[i]",
+			2,
+		},
+		{
+			"[1, 2, 3][3]",
+			nil,
+		},
+		{
+			`[1, 2, 3, 4, 5][1:3]`,
+			[]float64{2, 3},
+		},
+		{
+			`[1, 2, 3, 4, 5][:3]`,
+			[]float64{1, 2, 3},
+		},
+		{
+			`[1, 2, 3, 4, 5][1:]`,
+			[]float64{2, 3, 4, 5},
+		},
+		{
+			`[1, 2, 3, 4, 5][:]`,
+			[]float64{1, 2, 3, 4, 5},
+		},
+		{
+			`[1, 2, 3, 4, 5][1:-1]`,
+			[]float64{2, 3, 4},
+		},
+		{
+			`[1, 2, 3, 4, 5][-2]`,
+			4,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := CheckEval(tt.input)
+		switch tt.expected.(type) {
+		case int:
+			i := tt.expected.(int)
+			CheckIntegerObject(t, evaluated, float64(i))
+		case nil:
+			if _, ok := evaluated.(*object.Error); !ok {
+				t.Errorf("should be error. got=%T",
+					evaluated)
+			}
+		case []float64:
+			i := tt.expected.([]float64)
+			CheckArrayObject(t, evaluated, i)
+		}
+	}
+}
+
+func CheckArrayObject(t *testing.T, obj object.Object, expected []float64) bool {
+	result, ok := obj.(*object.Array)
+	if !ok {
+		t.Errorf("obj not type Array. got=%T",
+			obj)
+		return false
+	}
+
+	if len(expected) != len(result.Elements) {
+		t.Errorf("array does not contain enough values. got=%d, expected=%d",
+			len(result.Elements), len(expected))
+		return false
+	}
+
+	for index, ele := range result.Elements {
+		val, ok := ele.(*object.Integer)
+		if !ok {
+			t.Errorf("ele(%d) is not type Integer. got=%T",
+				index, ele)
+			continue
+		}
+
+		if expected[index] != val.Value {
+			t.Errorf("ele(%d) is does not contain %f. got=%f",
+				index, expected[index], val.Value)
+			continue
+		}
+	}
+	return true
+}
+
+// Test eval arrays
+func TestArrayLiteral(t *testing.T) {
+	input := `[1, 2 * 2, 3 + 3]`
+
+	evaluated := CheckEval(input)
+	result, ok := evaluated.(*object.Array)
+	if !ok {
+		t.Fatalf("object is not type Array. got=%T (%+v)",
+			evaluated, evaluated)
+	}
+
+	if len(result.Elements) != 3 {
+		t.Fatalf("array has wrong number of elements. got=%d",
+			len(result.Elements))
+	}
+
+	CheckIntegerObject(t, result.Elements[0], 1)
+	CheckIntegerObject(t, result.Elements[1], 4)
+	CheckIntegerObject(t, result.Elements[2], 6)
+}
+
 // Test Builtin functions
 func TestBuiltinFunctions(t *testing.T) {
 	tests := []struct {
@@ -321,6 +459,7 @@ func CheckEval(input string) object.Object {
 // Check if integer object
 func CheckIntegerObject(t *testing.T, obj object.Object, expected float64) bool {
 	result, ok := obj.(*object.Integer)
+
 	if !ok {
 		t.Errorf("object is not type Integer. got=%T (%+v)",
 			obj, obj)
