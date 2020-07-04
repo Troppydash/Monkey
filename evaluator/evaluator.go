@@ -352,6 +352,28 @@ func UnhandledOperationError(token token.Token, left object.Object, right object
 		left.Type(), operator, right.Type())
 }
 
+func EvalOperatorExpression(token token.Token, operator string, left object.Object, right object.Object) object.Object {
+	if fn, ok := InfixMap[left.Type()][operator]; ok {
+		result := fn(token, left, right)
+		if result != nil {
+			return result
+		}
+	}
+
+	// Implicit Handling
+	switch {
+	case operator == "==":
+		return NativeBoolToBooleanObject(left == right)
+	case operator == "!=":
+		return NativeBoolToBooleanObject(left != right)
+	case left.Type() != right.Type():
+		return NewError(token.ToTokenData(), "type mismatch: %s %s %s",
+			left.Type(), operator, right.Type())
+	default:
+		return UnhandledOperationError(token, left, right, operator)
+	}
+}
+
 // Eval Infix Expression
 func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) object.Object {
 	operator := node.Operator
@@ -372,25 +394,7 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 		return right
 	}
 
-	if fn, ok := InfixMap[left.Type()][operator]; ok {
-		result := fn(node.Token, left, right)
-		if result != nil {
-			return result
-		}
-	}
-
-	// Implicit Handling
-	switch {
-	case operator == "==":
-		return NativeBoolToBooleanObject(IsTruthful(left) == IsTruthful(right))
-	case operator == "!=":
-		return NativeBoolToBooleanObject(IsTruthful(left) != IsTruthful(right))
-	case left.Type() != right.Type():
-		return NewError(node.Token.ToTokenData(), "type mismatch: %s %s %s",
-			left.Type(), operator, right.Type())
-	default:
-		return UnhandledOperationError(node.Token, left, right, operator)
-	}
+	return EvalOperatorExpression(node.Token, operator, left, right)
 	//else if fn, ok = InfixMap[right.Type()][operator]; ok {
 	//	return fn(node.Token, left, right)
 	//}
@@ -433,6 +437,7 @@ func EvalShortCircuitExpression(operator string, left object.Object, node *ast.I
 }
 
 // All string operators
+// Legacy
 func EvalStringInfixExpression(operator string, left object.Object, right object.Object, token token.Token) object.Object {
 	switch operator {
 	case "+":
@@ -610,6 +615,16 @@ func EvalPrintExpressionStatement(token token.Token, exp ast.Expression, env *ob
 	builtins["writeLine"].Fn(token, result)
 	//fmt.Println(result.Inspect())
 	return NULL
+}
+
+func InitInfix() {
+	arrayInit()
+
+	InfixMap = map[object.ObjectType]InfixObj{
+		object.INTEGER_OBJ: Integer,
+		object.STRING_OBJ:  String,
+		object.ARRAY_OBJ:   Array,
+	}
 }
 
 // Eval Statements

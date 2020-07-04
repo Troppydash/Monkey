@@ -452,6 +452,7 @@ func CheckEval(input string) object.Object {
 	p := parser.New(l)
 	program := p.ParseProgram()
 	env := object.NewEnvironment()
+	InitInfix()
 
 	return Eval(program, env)
 }

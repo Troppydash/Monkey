@@ -32,6 +32,8 @@ func ProhibitedValue(method string, value interface{}, reason interface{}, token
 var builtins = map[string]*object.Builtin{
 	// TODO: Math Functions
 
+	// TODO: Array Push and Pop
+
 	// Array
 	"len": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
