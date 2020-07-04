@@ -301,7 +301,7 @@ func TestErrorHandling(t *testing.T) {
 	}{
 		{
 			`"Hello" - 'World'`,
-			"unknown operator: STRING - STRING",
+			"unknown operation: STRING - STRING",
 		},
 		{
 			"5 + true",
@@ -313,23 +313,23 @@ func TestErrorHandling(t *testing.T) {
 		},
 		{
 			"-true",
-			"unknown operator: -BOOLEAN",
+			"unknown operation: -BOOLEAN",
 		},
 		{
 			"true + false",
-			"unknown operator: BOOLEAN + BOOLEAN",
+			"unknown operation: BOOLEAN + BOOLEAN",
 		},
 		{
 			"5 true + false 5",
-			"unknown operator: BOOLEAN + BOOLEAN",
+			"unknown operation: BOOLEAN + BOOLEAN",
 		},
 		{
 			"if (10 > 1) { true + false }",
-			"unknown operator: BOOLEAN + BOOLEAN",
+			"unknown operation: BOOLEAN + BOOLEAN",
 		},
 		{
 			`if 10 > 1 { if 10 > 1 { return true + false } return 1 }`,
-			"unknown operator: BOOLEAN + BOOLEAN",
+			"unknown operation: BOOLEAN + BOOLEAN",
 		},
 		{
 			"foobar",
