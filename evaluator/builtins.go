@@ -28,7 +28,6 @@ func ProhibitedValue(method string, value interface{}, reason interface{}, token
 		method, value, reason)
 }
 
-// TODO: Optimizations
 var builtins = map[string]*object.Builtin{
 	// TODO: Math Functions
 
@@ -38,7 +37,6 @@ var builtins = map[string]*object.Builtin{
 	"len": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
-				// TODO
 				return WrongArgumentsAmount("len", len(args), "1", token)
 			}
 
@@ -171,8 +169,7 @@ var builtins = map[string]*object.Builtin{
 	"take": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) > 1 {
-				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=0/1",
-					len(args))
+				return WrongArgumentsAmount("take", len(args), "0-1", token)
 			}
 
 			reader := bufio.NewReader(os.Stdin)
@@ -190,8 +187,7 @@ var builtins = map[string]*object.Builtin{
 	"takeLine": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) > 1 {
-				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=0/1",
-					len(args))
+				return WrongArgumentsAmount("takeLine", len(args), "0-1", token)
 			}
 
 			reader := bufio.NewReader(os.Stdin)
@@ -206,6 +202,7 @@ var builtins = map[string]*object.Builtin{
 		},
 	},
 
+	// TODO: Add make error && panic/fatalError
 	// Checking
 	"error?": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
@@ -235,8 +232,7 @@ var builtins = map[string]*object.Builtin{
 	"bool!": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
-				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=1",
-					len(args))
+				return WrongArgumentsAmount("bool!", len(args), "1", token)
 			}
 			target := args[0]
 
@@ -251,8 +247,7 @@ var builtins = map[string]*object.Builtin{
 	"string!": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) > 1 {
-				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=1",
-					len(args))
+				return WrongArgumentsAmount("string!", len(args), "1", token)
 			}
 
 			target := args[0]
@@ -275,8 +270,7 @@ var builtins = map[string]*object.Builtin{
 	"number!": {
 		Fn: func(token token.Token, args ...object.Object) object.Object {
 			if len(args) != 1 {
-				return NewError(token.ToTokenData(), "wrong number of arguments. got=%d, expected=1",
-					len(args))
+				return WrongArgumentsAmount("number!", len(args), "1", token)
 			}
 			target := args[0]
 
@@ -309,8 +303,7 @@ var builtins = map[string]*object.Builtin{
 				}
 			}
 
-			return NewError(token.ToTokenData(), "argument to `number` not supported. got %s",
-				args[0].Type())
+			return ArgumentNotSupported("number", args[0].Type(), token)
 		},
 	},
 }

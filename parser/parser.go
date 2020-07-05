@@ -330,12 +330,11 @@ func (p *Parser) ParseExpressionStatement() interface {
 func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.currentToken.Type]
 	if prefix == nil {
+		// TODO: Make panic here
 		p.NoPrefixParseFnError(p.currentToken)
 		return nil
 	}
 	leftExpression := prefix()
-
-	// TODO: Make error here
 
 	for !p.PeekTokenIs(token.SEMICOLON) && precedence < p.PeekPrecedence() {
 		infix := p.infixParseFns[p.peekToken.Type]

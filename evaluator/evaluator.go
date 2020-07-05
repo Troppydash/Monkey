@@ -212,8 +212,8 @@ func EvalArrayIndexExpression(array object.Object, start object.Object, end obje
 				startIndex = int64(start.(*object.Integer).Value)
 				endIndex = int64(end.(*object.Integer).Value)
 			default:
-				startIndex = 0
-				endIndex = length
+				// Full Range
+				return arrayObj
 			}
 
 			if startIndex < 0 {
@@ -442,7 +442,6 @@ func EvalStringInfixExpression(operator string, left object.Object, right object
 	switch operator {
 	case "+":
 		{
-			// TODO This can be improved
 			// Left is int, right is string
 			if leftVal, ok := left.(*object.String); ok {
 				if rightVal, ok := right.(*object.String); ok {
@@ -617,6 +616,7 @@ func EvalPrintExpressionStatement(token token.Token, exp ast.Expression, env *ob
 	return NULL
 }
 
+// Init Infix Map
 func InitInfix() {
 	arrayInit()
 
