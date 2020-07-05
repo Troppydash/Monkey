@@ -9,6 +9,64 @@ import (
 	"testing"
 )
 
+func TestParsingEmptyHashLiteral(t *testing.T) {
+	input := `{}`
+
+	l := lexer.New(input, "testHashEmpty")
+	p := New(l)
+	program := p.ParseProgram()
+	p.CheckParserErrors(t)
+
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+	if !ok {
+		t.Fatalf("exp not type ast.HashLiteral. got=%T", stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 0 {
+		t.Errorf("hash.Pairs has wrong length. got=%d",
+			len(hash.Pairs))
+	}
+}
+
+// Test parsing Hashmaps
+func TestParsingHashLiteralsStringKeys(t *testing.T) {
+	input := `{"one": 1, "two": 2, "three": 3}`
+
+	l := lexer.New(input, "testHash")
+	p := New(l)
+	program := p.ParseProgram()
+	p.CheckParserErrors(t)
+
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+	if !ok {
+		t.Fatalf("exp is not ast.HashLiteral. got=%T",
+			stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 3 {
+		t.Errorf("hash.Pairs has wrong length. got=%d", len(hash.Pairs))
+	}
+
+	expected := map[string]float64{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+	}
+
+	for key, value := range hash.Pairs {
+		literal, ok := key.(*ast.StringLiteral)
+		if !ok {
+			t.Errorf("key is not type ast.StringLiteral. got=%T", key)
+		}
+
+		expectedValue := expected[literal.ToString()]
+		CheckIntegerLiteral(t, value, expectedValue)
+	}
+}
+
+// Test Indexing
 func TestParsingIndexRanges(t *testing.T) {
 	tests := []struct {
 		input string

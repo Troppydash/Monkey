@@ -134,6 +134,8 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.RegisterPrefix(token.LBRACKET, p.ParseArrayLiteral)
 
+	p.RegisterPrefix(token.LBRACE, p.ParseHashLiteral)
+
 	// Setup Infix Functions
 	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
 	p.RegisterInfix(token.PLUS, p.ParseInfixExpression)
@@ -700,6 +702,36 @@ func (p *Parser) ParseIndexExpression(left ast.Expression) ast.Expression {
 	}
 
 	return exp
+}
+
+// Parse HashMaps
+func (p *Parser) ParseHashLiteral() ast.Expression {
+	hash := &ast.HashLiteral{Token: p.currentToken}
+	hash.Pairs = make(map[ast.Expression]ast.Expression)
+
+	for !p.PeekTokenIs(token.RBRACE) {
+		p.NextToken()
+		key := p.ParseExpression(LOWEST)
+
+		if !p.ExpectPeek(token.COLON) {
+			return nil
+		}
+
+		p.NextToken()
+		value := p.ParseExpression(LOWEST)
+
+		hash.Pairs[key] = value
+
+		if !p.PeekTokenIs(token.RBRACE) && !p.ExpectPeek(token.COMMA) {
+			return nil
+		}
+	}
+
+	if !p.ExpectPeek(token.RBRACE) {
+		return nil
+	}
+
+	return hash
 }
 
 func FormatFloat(t float64) string {

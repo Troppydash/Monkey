@@ -367,13 +367,7 @@ func (sl *StringLiteral) TokenLiteral() string {
 	return sl.Token.Literal
 }
 func (sl *StringLiteral) ToString() string {
-	var out strings.Builder
-
-	out.WriteString("\"")
-	out.WriteString(sl.Token.Literal)
-	out.WriteString("\"")
-
-	return out.String()
+	return sl.Token.Literal
 }
 
 // Array object
@@ -437,6 +431,30 @@ func (ie *IndexExpression) ToString() string {
 	}
 	out.WriteString("]")
 	AddClosingBrace(&out)
+
+	return out.String()
+}
+
+type HashLiteral struct {
+	Token token.Token
+	Pairs map[Expression]Expression
+}
+
+func (hl *HashLiteral) ExpressionNode() {}
+func (hl *HashLiteral) TokenLiteral() string {
+	return hl.Token.Literal
+}
+func (hl *HashLiteral) ToString() string {
+	var out strings.Builder
+
+	var pairs []string
+	for key, value := range hl.Pairs {
+		pairs = append(pairs, key.ToString()+":"+value.ToString())
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
 
 	return out.String()
 }
