@@ -617,7 +617,8 @@ func EvalPrintExpressionStatement(token token.Token, exp ast.Expression, env *ob
 }
 
 // Init Infix Map
-func InitInfix() {
+func InitEvaluator() {
+	builtinsInit()
 	arrayInit()
 
 	InfixMap = map[object.ObjectType]InfixObj{

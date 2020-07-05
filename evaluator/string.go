@@ -13,6 +13,9 @@ var String = map[string]InfixFn{
 		case *object.String:
 			rightVal := right.(*object.String).Value
 			return &object.String{Value: leftVal + rightVal}
+		case *object.Integer:
+			rightVal := right.(*object.Integer).Inspect()
+			return &object.String{Value: leftVal + rightVal}
 		default:
 			return nil
 		}

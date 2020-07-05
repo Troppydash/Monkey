@@ -28,7 +28,7 @@ func main() {
 		program := p.ParseProgram()
 		env := object.NewEnvironment()
 
-		evaluator.InitInfix()
+		evaluator.InitEvaluator()
 		evaluator.Eval(program, env)
 
 		return

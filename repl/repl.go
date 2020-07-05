@@ -33,7 +33,7 @@ func Start(in io.Reader, out io.Writer) {
 	// REPL Environment
 	env := object.NewEnvironment()
 
-	evaluator.InitInfix()
+	evaluator.InitEvaluator()
 	for {
 		// Display Prompt Header
 		fmt.Printf(PROMPT)
