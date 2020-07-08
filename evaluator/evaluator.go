@@ -159,9 +159,40 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 
 		return EvalIndexExpression(left, start, end, node.Token, node.HasRange)
+
+	case *ast.HashLiteral:
+		return EvalHashLiteral(node, env)
 	}
 
 	return NULL
+}
+
+// Evaluate hash maps
+func EvalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {
+	pairs := make(map[object.HashKey]object.HashPair)
+
+	for keyNode, valueNode := range node.Pairs {
+		key := Eval(keyNode, env)
+		if CheckError(key) {
+			return key
+		}
+
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return NewError(node.Token.ToTokenData(), "unusable as hash key: %s", key.Type())
+		}
+
+		value := Eval(valueNode, env)
+		if CheckError(value) {
+			return value
+		}
+
+		hashed := hashKey.HashKey()
+		pairs[hashed] = object.HashPair{Key: key, Value: value}
+	}
+
+	return &object.Hash{Pairs: pairs}
+
 }
 
 // Eval Indexing
