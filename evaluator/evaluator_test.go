@@ -8,6 +8,36 @@ import (
 	"testing"
 )
 
+func TestHashIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{
+			`{'foo': 5}['foo']`,
+			5,
+		},
+		{
+			`let key = 'foo' {'foo': 5}[key]`,
+			5,
+		},
+		{
+			`{true: 5}[true]`,
+			5,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := CheckEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			CheckIntegerObject(t, evaluated, float64(integer))
+		} else {
+			CheckNullObject(t, evaluated)
+		}
+	}
+}
+
 func TestHashLiterals(t *testing.T) {
 	input := `
 let two = "two";
@@ -376,6 +406,10 @@ func TestErrorHandling(t *testing.T) {
 		{
 			"foobar",
 			"identifier not found: foobar",
+		},
+		{
+			`{'name': 'Monkey'}[fn(x) { x }]`,
+			"unusable as hash key: FUNCTION",
 		},
 	}
 

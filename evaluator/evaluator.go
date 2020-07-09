@@ -200,9 +200,27 @@ func EvalIndexExpression(exp object.Object, start object.Object, end object.Obje
 	switch exp.(type) {
 	case *object.Array:
 		return EvalArrayIndexExpression(exp, start, end, token, hasRange)
+	case *object.Hash:
+		return EvalHashIndexExpression(exp, start, token)
 	default:
 		return NewError(token.ToTokenData(), "index operator not support for `%s`", exp.Type())
 	}
+}
+
+func EvalHashIndexExpression(hash object.Object, index object.Object, token token.Token) object.Object {
+	hashObject := hash.(*object.Hash)
+
+	key, ok := index.(object.Hashable)
+	if !ok {
+		return NewError(token.ToTokenData(), "unusable as hash key: %s", index.Type())
+	}
+
+	pair, ok := hashObject.Pairs[key.HashKey()]
+	if !ok {
+		return NULL
+	}
+
+	return pair.Value
 }
 
 func IsIndexInRange(index int64, length int64) bool {
