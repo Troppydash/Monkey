@@ -227,6 +227,30 @@ func (ie *InfixExpression) ToString() string {
 	return out.String()
 }
 
+type Null struct {
+	Token token.Token
+}
+
+func (n *Null) ExpressionNode() {}
+func (n *Null) TokenLiteral() string {
+	return n.Token.Literal
+}
+func (n *Null) ToString() string {
+	return n.Token.Literal
+}
+
+type Break struct {
+	Token token.Token
+}
+
+func (b *Break) ExpressionNode() {}
+func (b *Break) TokenLiteral() string {
+	return b.Token.Literal
+}
+func (b *Break) ToString() string {
+	return b.Token.Literal
+}
+
 // Boolean Type
 type Boolean struct {
 	Token token.Token // Boolean Token

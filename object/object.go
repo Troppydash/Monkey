@@ -14,6 +14,7 @@ const (
 	INTEGER_OBJ      = "INTEGER"      // Int
 	BOOLEAN_OBJ      = "BOOLEAN"      // Bool
 	NULL_OBJ         = "NULL"         // Disgusting
+	BREAK_OBJ        = "BREAK"        // break
 	RETURN_VALUE_OBJ = "RETURN_VALUE" // return
 	ERROR_OBJ        = "ERROR"        // error
 	FUNCTION_OBJ     = "FUNCTION"     // fn
@@ -44,6 +45,16 @@ func (i *Integer) Type() ObjectType {
 }
 func (i *Integer) Inspect() string {
 	return strconv.FormatFloat(i.Value, 'f', -1, 64)
+}
+
+type Break struct{}
+
+func (b *Break) Type() ObjectType {
+	return BREAK_OBJ
+}
+
+func (b *Break) Inspect() string {
+	return "break"
 }
 
 // The boolean wrapper
@@ -137,7 +148,7 @@ func (s *String) Inspect() string {
 }
 
 // Builtin function type
-type BuiltinFunction func(token token.Token, args ...Object) Object
+type BuiltinFunction func(token token.Token, env *Environment, args ...Object) Object
 
 // Builtin function wrapper
 type Builtin struct {

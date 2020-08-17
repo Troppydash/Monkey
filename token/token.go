@@ -47,6 +47,8 @@ const (
 	LET      = "LET"
 	TRUE     = "TRUE"
 	FALSE    = "FALSE"
+	NULL     = "NULL"
+	BREAK    = "BREAK"
 	IF       = "IF"
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
@@ -99,6 +101,9 @@ var keywords = map[string]TokenType{
 	"and": AND,
 	"or":  OR,
 	"xor": XOR,
+
+	"null":  NULL,
+	"break": BREAK,
 }
 
 // Return a TokenType from a plain string

@@ -41,7 +41,7 @@ func handleArray(operator string, token token.Token, left object.Object, right o
 }
 
 // Array is special
-func arrayInit() {
+func init() {
 	Array = map[string]InfixFn{
 		"+": func(token token.Token, left object.Object, right object.Object) object.Object {
 			return handleArray("+", token, left, right)

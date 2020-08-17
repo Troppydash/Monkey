@@ -124,6 +124,8 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.RegisterPrefix(token.TRUE, p.ParseBoolean)
 	p.RegisterPrefix(token.FALSE, p.ParseBoolean)
+	p.RegisterPrefix(token.BREAK, p.ParseBreak)
+	p.RegisterPrefix(token.NULL, p.ParseNull)
 
 	p.RegisterPrefix(token.LPAREN, p.parseGroupedExpression)
 
@@ -732,6 +734,18 @@ func (p *Parser) ParseHashLiteral() ast.Expression {
 	}
 
 	return hash
+}
+
+func (p *Parser) ParseBreak() ast.Expression {
+	return &ast.Break{
+		Token: p.currentToken,
+	}
+}
+
+func (p *Parser) ParseNull() ast.Expression {
+	return &ast.Null{
+		Token: p.currentToken,
+	}
 }
 
 func FormatFloat(t float64) string {

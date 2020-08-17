@@ -30,15 +30,13 @@ func ProhibitedValue(method string, value interface{}, reason interface{}, token
 
 var builtins map[string]*object.Builtin
 
-func builtinsInit() {
+func init() {
 	builtins = map[string]*object.Builtin{
 		// TODO: Math Functions
 
-		// TODO: Array Push and Pop
-
 		// Array
 		"len": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return WrongArgumentsAmount("len", len(args), "1", token)
 				}
@@ -54,7 +52,7 @@ func builtinsInit() {
 			},
 		},
 		"range": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 
 				switch len(args) {
 
@@ -140,7 +138,7 @@ func builtinsInit() {
 			},
 		},
 		"push": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 2 {
 					return WrongArgumentsAmount("push", len(args), "2", token)
 				}
@@ -159,50 +157,110 @@ func builtinsInit() {
 				return &object.Array{Elements: newElements}
 			},
 		},
+		"add": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				if len(args) != 2 {
+					return WrongArgumentsAmount("add", len(args), "2", token)
+				}
+
+				if args[0].Type() != object.ARRAY_OBJ {
+					return ArgumentNotSupported("add", args[0].Type(), token)
+				}
+
+				arr := args[0].(*object.Array)
+
+				arr.Elements = append(arr.Elements, args[1])
+				return NULL
+			},
+		},
 		// TODO: Pop, map, forEach, repeat
 
-		"for": {
-			// TODO: Implem better for loops
-			Fn: func(token token.Token, args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return WrongArgumentsAmount("repeat", len(args), "1", token)
+		"loop": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				if !(len(args) <= 2) {
+					return WrongArgumentsAmount("loop", len(args), "1-2", token)
 				}
 
 				if args[0].Type() != object.FUNCTION_OBJ {
-					return ArgumentNotSupported("repeat", args[0].Type(), token)
+					return ArgumentNotSupported("loop", args[0].Type(), token)
 				}
 
 				fn := args[0].(*object.Function)
 
-				var result object.Object = FALSE
+				t := &object.Integer{Value: float64(0)}
 
-				if len(fn.Parameters) == 1 {
-					times := 0
-					for !IsTruthful(result) {
+				switch len(args) {
+				case 1:
+					var result object.Object
+					for result != BREAK {
+						//env.Store("t", &object.Integer{Value: float64(t)})
+						t.Value += 1
 						result = ApplyFunction(token, fn, []object.Object{
-							&object.Integer{Value: float64(times)},
-						})
-						times += 1
+							t,
+						}, env)
 					}
-				} else {
-					for !IsTruthful(result) {
-						result = ApplyFunction(token, fn, []object.Object{})
+
+				case 2:
+					val, ok := args[1].(*object.Integer)
+					if !ok {
+						return ArgumentNotSupported("loop", args[1], token)
+					}
+
+					times := val.Value
+
+					for ; t.Value < times; t.Value++ {
+						//env.Store("t", &object.Integer{Value: float64(t)})
+						ApplyFunction(token, fn, []object.Object{
+							t,
+						}, env)
 					}
 				}
-
-				return result
+				return NULL
 			},
 		},
+
+		//"for": {
+		//	// TODO: Implem better for loops
+		//	Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+		//		if len(args) != 1 {
+		//			return WrongArgumentsAmount("for", len(args), "1", token)
+		//		}
+		//
+		//		if args[0].Type() != object.FUNCTION_OBJ {
+		//			return ArgumentNotSupported("for", args[0].Type(), token)
+		//		}
+		//
+		//		fn := args[0].(*object.Function)
+		//
+		//		var result object.Object = FALSE
+		//
+		//		if len(fn.Parameters) == 1 {
+		//			times := 0
+		//			for !IsTruthful(result) {
+		//				result = ApplyFunction(token, fn, []object.Object{
+		//					&object.Integer{Value: float64(times)},
+		//				})
+		//				times += 1
+		//			}
+		//		} else {
+		//			for !IsTruthful(result) {
+		//				result = ApplyFunction(token, fn, []object.Object{})
+		//			}
+		//		}
+		//
+		//		return result
+		//	},
+		//},
 
 		// IO
 		"format": {
 			// TODO: Implem
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				return NULL
 			},
 		},
 		"write": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				var out []string
 				for _, obj := range args {
 					out = append(out, obj.Inspect())
@@ -213,7 +271,7 @@ func builtinsInit() {
 			},
 		},
 		"writeLine": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				var out []string
 				for _, obj := range args {
 					out = append(out, obj.Inspect())
@@ -224,7 +282,7 @@ func builtinsInit() {
 			},
 		},
 		"take": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) > 1 {
 					return WrongArgumentsAmount("take", len(args), "0-1", token)
 				}
@@ -242,7 +300,7 @@ func builtinsInit() {
 			},
 		},
 		"takeLine": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) > 1 {
 					return WrongArgumentsAmount("takeLine", len(args), "0-1", token)
 				}
@@ -262,7 +320,7 @@ func builtinsInit() {
 		// TODO: Add make error && panic/fatalError
 		// Checking
 		"error?": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return TRUE
 				}
@@ -276,7 +334,7 @@ func builtinsInit() {
 			},
 		},
 		"null?": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return FALSE
 				}
@@ -287,7 +345,7 @@ func builtinsInit() {
 
 		// Casting
 		"bool!": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return WrongArgumentsAmount("bool!", len(args), "1", token)
 				}
@@ -302,7 +360,7 @@ func builtinsInit() {
 			},
 		},
 		"string!": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) > 1 {
 					return WrongArgumentsAmount("string!", len(args), "1", token)
 				}
@@ -325,7 +383,7 @@ func builtinsInit() {
 			},
 		},
 		"number!": {
-			Fn: func(token token.Token, args ...object.Object) object.Object {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return WrongArgumentsAmount("number!", len(args), "1", token)
 				}

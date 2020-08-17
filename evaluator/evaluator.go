@@ -13,6 +13,7 @@ import (
 var (
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
+	BREAK = &object.Break{}
 	NULL  = &object.Null{}
 )
 
@@ -75,6 +76,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
 
+	case *ast.Null:
+		return NULL
+
+	case *ast.Break:
+		return BREAK
+
 	case *ast.Boolean:
 		return NativeBoolToBooleanObject(node.Value)
 
@@ -128,7 +135,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if len(args) == 1 && CheckError(args[0]) {
 			return args[0]
 		}
-		return ApplyFunction(node.Token, function, args)
+		return ApplyFunction(node.Token, function, args, env)
 
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
@@ -297,7 +304,7 @@ func EvalArrayIndexExpression(array object.Object, start object.Object, end obje
 }
 
 // Create a function and eval it
-func ApplyFunction(token token.Token, function object.Object, args []object.Object) object.Object {
+func ApplyFunction(token token.Token, function object.Object, args []object.Object, environment *object.Environment) object.Object {
 	switch fn := function.(type) {
 	case *object.Function:
 		extendedEnv := ExtendFunctionEnv(fn, args)
@@ -305,7 +312,7 @@ func ApplyFunction(token token.Token, function object.Object, args []object.Obje
 		return UnwrapReturnValue(evaluated)
 
 	case *object.Builtin:
-		return fn.Fn(token, args...)
+		return fn.Fn(token, environment, args...)
 
 	default:
 		return NewError(token.ToTokenData(), "not a function: %s", function.Type())
@@ -660,21 +667,9 @@ func NativeBoolToBooleanObject(value bool) object.Object {
 // Eval Print ExpressionStmt
 func EvalPrintExpressionStatement(token token.Token, exp ast.Expression, env *object.Environment) object.Object {
 	result := Eval(exp, env)
-	builtins["writeLine"].Fn(token, result)
+	builtins["writeLine"].Fn(token, env, result)
 	//fmt.Println(result.Inspect())
 	return NULL
-}
-
-// Init Infix Map
-func InitEvaluator() {
-	builtinsInit()
-	arrayInit()
-
-	InfixMap = map[object.ObjectType]InfixObj{
-		object.INTEGER_OBJ: Integer,
-		object.STRING_OBJ:  String,
-		object.ARRAY_OBJ:   Array,
-	}
 }
 
 // Eval Statements

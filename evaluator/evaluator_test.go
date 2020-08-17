@@ -528,7 +528,6 @@ func CheckEval(input string) object.Object {
 	p := parser.New(l)
 	program := p.ParseProgram()
 	env := object.NewEnvironment()
-	InitEvaluator()
 
 	return Eval(program, env)
 }
