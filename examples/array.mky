@@ -18,7 +18,7 @@ let map = fn (list, func) {
     return newList
 }
 
-let printEveryEvent = fn (list) {
+let printEveryEven = fn (list) {
     let switch = true
     loop(fn (t) {
         if switch {

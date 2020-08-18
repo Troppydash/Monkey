@@ -4,10 +4,8 @@ import (
 	"Monkey/ast"
 	"Monkey/object"
 	"Monkey/options"
-	"Monkey/parser"
 	"Monkey/token"
 	"fmt"
-	"strings"
 )
 
 var (
@@ -538,69 +536,69 @@ func EvalShortCircuitExpression(operator string, left object.Object, node *ast.I
 
 // All string operators
 // Legacy
-func EvalStringInfixExpression(operator string, left object.Object, right object.Object, token token.Token) object.Object {
-	switch operator {
-	case "+":
-		{
-			// Left is int, right is string
-			if leftVal, ok := left.(*object.String); ok {
-				if rightVal, ok := right.(*object.String); ok {
-					return &object.String{
-						Value: leftVal.Value + rightVal.Value,
-					}
-				} else if rightVal, ok := right.(*object.Integer); ok {
-					// Left is string, right is int
-					leftVal := left.(*object.String).Value
-					return &object.String{
-						Value: leftVal + parser.FormatFloat(rightVal.Value),
-					}
-				}
-			} else if leftVal, ok := left.(*object.Integer); ok {
-				rightVal := right.(*object.String).Value
-				return &object.String{
-					Value: parser.FormatFloat(leftVal.Value) + rightVal,
-				}
-			} else {
-				// Error
-			}
-		}
-	case "*":
-		{
-			if rightVal, ok := right.(*object.Integer); ok {
-				leftVal := left.(*object.String)
-				var out strings.Builder
-
-				amount := int(rightVal.Value)
-
-				for i := 0; i < amount; i++ {
-					out.WriteString(leftVal.Value)
-				}
-
-				return &object.String{Value: out.String()}
-			}
-		}
-	case "==":
-		{
-			if leftVal, ok := left.(*object.String); ok {
-				if rightVal, ok := right.(*object.String); ok {
-					return NativeBoolToBooleanObject(leftVal.Value == rightVal.Value)
-				}
-			}
-		}
-	case "!=":
-		{
-			if leftVal, ok := left.(*object.String); ok {
-				if rightVal, ok := right.(*object.String); ok {
-					return NativeBoolToBooleanObject(leftVal.Value != rightVal.Value)
-				}
-			}
-		}
-
-	}
-
-	return NewFatalError(token.ToTokenData(), "unknown operator: %s %s %s",
-		left.Type(), operator, right.Type())
-}
+//func EvalStringInfixExpression(operator string, left object.Object, right object.Object, token token.Token) object.Object {
+//	switch operator {
+//	case "+":
+//		{
+//			// Left is int, right is string
+//			if leftVal, ok := left.(*object.String); ok {
+//				if rightVal, ok := right.(*object.String); ok {
+//					return &object.String{
+//						Value: leftVal.Value + rightVal.Value,
+//					}
+//				} else if rightVal, ok := right.(*object.Integer); ok {
+//					// Left is string, right is int
+//					leftVal := left.(*object.String).Value
+//					return &object.String{
+//						Value: leftVal + parser.FormatFloat(rightVal.Value),
+//					}
+//				}
+//			} else if leftVal, ok := left.(*object.Integer); ok {
+//				rightVal := right.(*object.String).Value
+//				return &object.String{
+//					Value: parser.FormatFloat(leftVal.Value) + rightVal,
+//				}
+//			} else {
+//				// Error
+//			}
+//		}
+//	case "*":
+//		{
+//			if rightVal, ok := right.(*object.Integer); ok {
+//				leftVal := left.(*object.String)
+//				var out strings.Builder
+//
+//				amount := int(rightVal.Value)
+//
+//				for i := 0; i < amount; i++ {
+//					out.WriteString(leftVal.Value)
+//				}
+//
+//				return &object.String{Value: out.String()}
+//			}
+//		}
+//	case "==":
+//		{
+//			if leftVal, ok := left.(*object.String); ok {
+//				if rightVal, ok := right.(*object.String); ok {
+//					return NativeBoolToBooleanObject(leftVal.Value == rightVal.Value)
+//				}
+//			}
+//		}
+//	case "!=":
+//		{
+//			if leftVal, ok := left.(*object.String); ok {
+//				if rightVal, ok := right.(*object.String); ok {
+//					return NativeBoolToBooleanObject(leftVal.Value != rightVal.Value)
+//				}
+//			}
+//		}
+//
+//	}
+//
+//	return NewFatalError(token.ToTokenData(), "unknown operator: %s %s %s",
+//		left.Type(), operator, right.Type())
+//}
 
 // Eval Or Expression
 func EvalOrExpression(left object.Object, rightExp ast.Expression, env *object.Environment) object.Object {

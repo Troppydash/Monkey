@@ -240,6 +240,7 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 		Value: p.currentToken.Literal,
 	}
 
+	// TODO: Fix this problem
 	if !p.ExpectPeek(token.ASSIGN) {
 		if p.PeekTokenIs(token.SEMICOLON) {
 			p.NextToken()
