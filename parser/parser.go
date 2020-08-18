@@ -109,8 +109,6 @@ func New(l *lexer.Lexer) *Parser {
 
 	// Setup Pratt Parsing Functions
 
-	// TODO: Setup assignment parsing and eval
-
 	// Setup Prefix Functions
 	p.prefixParseFns = make(map[token.TokenType]PrefixParseFn)
 	p.RegisterPrefix(token.IDENT, p.ParseIdentifier)
@@ -624,6 +622,16 @@ func (p *Parser) ParseCallExpression(function ast.Expression) ast.Expression {
 		Function: function,
 	}
 	exp.Arguments = p.ParseExpressionList(token.RPAREN)
+
+	// So that last parameter can be a function
+	if p.PeekTokenIs(token.HASH) {
+		p.NextToken()
+		exp.Arguments = append(exp.Arguments, p.ParseHashFunctionLiteral())
+	} else if p.PeekTokenIs(token.FUNCTION) {
+		p.NextToken()
+		exp.Arguments = append(exp.Arguments, p.ParseFunctionLiteral())
+	}
+
 	return exp
 }
 
