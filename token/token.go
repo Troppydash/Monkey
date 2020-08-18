@@ -18,6 +18,7 @@ const (
 	ASTERISK = "*"
 	SLASH    = "/"
 	PERCENT  = "%"
+	HASH     = "#"
 
 	// Compare
 	LT     = "<"

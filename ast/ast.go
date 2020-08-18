@@ -111,21 +111,24 @@ func (rs *ReturnStatement) ToString() string {
 	return out.String()
 }
 
-// TODO: Rename Assignment Expression
-type Assignment struct {
+type AssignmentExpression struct {
 	Token token.Token
 	Ident *Identifier
 	Value Expression
 }
 
-// TODO: Make this an expression
-func (a *Assignment) ExpressionNode() {}
-func (a *Assignment) TokenLiteral() string {
+func (a *AssignmentExpression) ExpressionNode() {}
+func (a *AssignmentExpression) TokenLiteral() string {
 	return a.Token.Literal
 }
-func (a *Assignment) ToString() string {
-	// TODO: Improve thiss
-	return a.Ident.ToString()
+func (a *AssignmentExpression) ToString() string {
+	var out strings.Builder
+
+	AddOpeningBrace(&out)
+	out.WriteString(a.Ident.ToString())
+	out.WriteString(a.Value.ToString())
+	AddClosingBrace(&out)
+	return out.String()
 }
 
 // An identifier

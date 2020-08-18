@@ -1,30 +1,35 @@
 package evaluator
 
 import (
+	"Monkey/lexer"
 	"Monkey/object"
+	"Monkey/parser"
+	"Monkey/tmp"
 	"Monkey/token"
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 )
 
 // Argument not supported error
 func ArgumentNotSupported(method string, typ interface{}, token token.Token) *object.Error {
-	return NewError(token.ToTokenData(), "argument to `%s` not supported. got %s",
+	return NewFatalError(token.ToTokenData(), "argument to `%s` not supported. got %s",
 		method, typ)
 }
 
 // Incorrect argument amount error
 func WrongArgumentsAmount(method string, got interface{}, expected interface{}, token token.Token) *object.Error {
-	return NewError(token.ToTokenData(), "wrong number of arguments for method `%s`. got=%d, expected=%s",
+	return NewFatalError(token.ToTokenData(), "wrong number of arguments for method `%s`. got=%d, expected=%s",
 		method, got, expected)
 }
 
 // Prohibited Value error
 func ProhibitedValue(method string, value interface{}, reason interface{}, token token.Token) *object.Error {
-	return NewError(token.ToTokenData(), "prohibited value of arguments for method `%s`. got=%v, reason=%s",
+	return NewFatalError(token.ToTokenData(), "prohibited value of arguments for method `%s`. got=%v, reason=%s",
 		method, value, reason)
 }
 
@@ -34,6 +39,32 @@ func init() {
 	builtins = map[string]*object.Builtin{
 		// TODO: Math Functions
 
+		"include": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return WrongArgumentsAmount("include", len(args), "1", token)
+				}
+
+				filename, ok := args[0].(*object.String)
+				if !ok {
+					return NULL
+				}
+
+				content, err := ioutil.ReadFile(path.Join(path.Dir(tmp.Filename), filename.Value))
+				if err != nil {
+					fmt.Println("An Error occurred reading the file")
+					return NULL
+				}
+
+				l := lexer.New(string(content), path.Join(tmp.Filename, filename.Value))
+				p := parser.New(l)
+				program := p.ParseProgram()
+
+				Eval(program, env)
+
+				return NULL
+			},
+		},
 		// Array
 		"len": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -219,38 +250,30 @@ func init() {
 			},
 		},
 
-		//"for": {
-		//	// TODO: Implem better for loops
-		//	Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-		//		if len(args) != 1 {
-		//			return WrongArgumentsAmount("for", len(args), "1", token)
-		//		}
-		//
-		//		if args[0].Type() != object.FUNCTION_OBJ {
-		//			return ArgumentNotSupported("for", args[0].Type(), token)
-		//		}
-		//
-		//		fn := args[0].(*object.Function)
-		//
-		//		var result object.Object = FALSE
-		//
-		//		if len(fn.Parameters) == 1 {
-		//			times := 0
-		//			for !IsTruthful(result) {
-		//				result = ApplyFunction(token, fn, []object.Object{
-		//					&object.Integer{Value: float64(times)},
-		//				})
-		//				times += 1
-		//			}
-		//		} else {
-		//			for !IsTruthful(result) {
-		//				result = ApplyFunction(token, fn, []object.Object{})
-		//			}
-		//		}
-		//
-		//		return result
-		//	},
-		//},
+		"while": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				if !(len(args) == 2) {
+					return WrongArgumentsAmount("while", len(args), "2", token)
+				}
+
+				if args[0].Type() != object.FUNCTION_OBJ {
+					return ArgumentNotSupported("while", args[0].Type(), token)
+				}
+				if args[1].Type() != object.FUNCTION_OBJ {
+					return ArgumentNotSupported("while", args[1].Type(), token)
+				}
+
+				fn := args[0].(*object.Function)
+				exe := args[1].(*object.Function)
+
+				result := ApplyFunction(token, fn, []object.Object{}, env)
+				for IsTruthful(result) {
+					ApplyFunction(token, exe, []object.Object{}, env)
+					result = ApplyFunction(token, fn, []object.Object{}, env)
+				}
+				return NULL
+			},
+		},
 
 		// IO
 		"format": {

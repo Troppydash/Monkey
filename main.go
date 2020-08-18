@@ -1,13 +1,9 @@
 package main
 
 import (
-	"Monkey/evaluator"
-	"Monkey/lexer"
-	"Monkey/object"
-	"Monkey/parser"
 	"Monkey/repl"
+	"Monkey/runner"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/user"
 )
@@ -18,17 +14,9 @@ func main() {
 	if len(os.Args) == 2 {
 
 		filename := os.Args[1]
-		content, err := ioutil.ReadFile(filename)
-		if err != nil {
-			fmt.Println("An Error occurred reading the file")
-		}
-
-		l := lexer.New(string(content), filename)
-		p := parser.New(l)
-		program := p.ParseProgram()
-		env := object.NewEnvironment()
-
-		evaluator.Eval(program, env)
+		// TODO: Make everything runner
+		r := runner.New()
+		r.Execute(filename)
 
 		return
 	}

@@ -6,9 +6,11 @@ import (
 	"Monkey/object"
 	"Monkey/options"
 	"Monkey/parser"
+	"Monkey/tmp"
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -26,6 +28,10 @@ func PrintParserErrors(out io.Writer, errors []*parser.ParseError) {
 
 // Start the REPL by repeating asking for input
 func Start(in io.Reader, out io.Writer) {
+
+	// TODO: Fix
+	path, _ := os.Getwd()
+	tmp.Filename = path
 
 	// Create a new Scanner
 	scanner := bufio.NewScanner(in)

@@ -2,5 +2,5 @@ package options
 
 var (
 	NicerToString = false
-	FatalErrors   = true
+	FatalErrors   = false
 )

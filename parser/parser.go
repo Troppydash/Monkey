@@ -3,7 +3,6 @@ package parser
 import (
 	"Monkey/ast"
 	"Monkey/lexer"
-	"Monkey/options"
 	"Monkey/token"
 	"fmt"
 	"math"
@@ -133,6 +132,7 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.RegisterPrefix(token.IF, p.ParseIfExpression)
 	p.RegisterPrefix(token.FUNCTION, p.ParseFunctionLiteral)
+	p.RegisterPrefix(token.HASH, p.ParseHashFunctionLiteral)
 
 	p.RegisterPrefix(token.STRING, p.ParseStringLiteral)
 
@@ -200,12 +200,10 @@ func (p *Parser) ParseProgram() *ast.Program {
 		p.NextToken()
 	}
 
-	if options.FatalErrors {
-		if p.HasError() {
-			for _, err := range p.Errors() {
-				fmt.Printf("Parser Error: %s, at %d:%d, in file %s\n",
-					err.Message, err.RowNumber, err.ColumnNumber, err.Filename)
-			}
+	if p.HasError() {
+		for _, err := range p.Errors() {
+			fmt.Printf("Parser Error: %s, at %d:%d, in file %s\n",
+				err.Message, err.RowNumber, err.ColumnNumber, err.Filename)
 		}
 	}
 
@@ -344,7 +342,6 @@ func (p *Parser) ParseExpressionStatement() interface {
 func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.currentToken.Type]
 	if prefix == nil {
-		// TODO: Make panic here
 		p.NoPrefixParseFnError(p.currentToken)
 		return nil
 	}
@@ -355,7 +352,6 @@ func (p *Parser) ParseExpression(precedence int) ast.Expression {
 		if infix == nil {
 			return leftExpression
 		}
-
 		p.NextToken()
 		leftExpression = infix(leftExpression)
 	}
@@ -396,7 +392,7 @@ func (p *Parser) ParseIdentifier() ast.Expression {
 	if p.PeekTokenIs(token.ASSIGN) {
 		p.NextToken()
 		p.NextToken()
-		return &ast.Assignment{
+		return &ast.AssignmentExpression{
 			Token: p.currentToken,
 			Ident: ident,
 			Value: p.ParseExpression(LOWEST),
@@ -543,6 +539,20 @@ func (p *Parser) ParseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
+func (p *Parser) ParseHashFunctionLiteral() ast.Expression {
+	fnLit := &ast.FunctionLiteral{Token: p.currentToken}
+
+	fnLit.Parameters = []*ast.Identifier{}
+
+	// Check {
+	if !p.ExpectPeek(token.LBRACE) {
+		return nil
+	}
+
+	fnLit.Body = p.ParseBlockStatement()
+	return fnLit
+}
+
 // Parse a function expression
 func (p *Parser) ParseFunctionLiteral() ast.Expression {
 	fnLit := &ast.FunctionLiteral{Token: p.currentToken}
@@ -558,7 +568,6 @@ func (p *Parser) ParseFunctionLiteral() ast.Expression {
 	if !p.ExpectPeek(token.LBRACE) {
 		return nil
 	}
-
 	fnLit.Body = p.ParseBlockStatement()
 	return fnLit
 }
