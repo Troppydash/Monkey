@@ -19,10 +19,14 @@ var (
 
 // Create a new error node
 func NewError(data *token.TokenData, format string, a ...interface{}) *object.Error {
-	return &object.Error{
+	message := &object.Error{
 		Message:   fmt.Sprintf(format, a...),
 		TokenData: data,
 	}
+	if options.FatalErrors {
+		fmt.Println(message.Inspect())
+	}
+	return message
 }
 
 // Modified here
@@ -115,7 +119,21 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 
+		// TODO: Fix this
 		env.Store(node.Name.Value, val)
+
+	case *ast.Assignment:
+		val := Eval(node.Value, env)
+		if CheckError(val) {
+			return NewError(node.Token.ToTokenData(), "Error evaluating expression")
+		}
+
+		if _, ok := env.Get(node.Ident.Value); !ok {
+			env.Store(node.Ident.Value, val)
+			return val
+		}
+		env.Replace(node.Ident.Value, val)
+		return val
 
 	case *ast.Identifier:
 		return EvalIdentifier(node, env)
@@ -430,6 +448,17 @@ func EvalOperatorExpression(token token.Token, operator string, left object.Obje
 	}
 }
 
+//func EvalAssignmentExpression(token token.Token, left object.Object, right object.Object, env *object.Environment) object.Object {
+//	assign, ok := left.(object.Assignable)
+//	if !ok {
+//		return NewError(token.ToTokenData(), "assignment target not valid: %s %s %s",
+//			left.Type(), "=", right.Type())
+//	}
+//	value, ok := right.(*object.Integer)
+//	assign.SetValue(value)
+//	return NULL
+//}
+
 // Eval Infix Expression
 func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) object.Object {
 	operator := node.Operator
@@ -449,6 +478,12 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 	if CheckError(right) {
 		return right
 	}
+
+	// Try ident
+	//switch operator {
+	//case token.ASSIGN:
+	//	return EvalAssignmentExpression(node.Token, left, right, env)
+	//}
 
 	return EvalOperatorExpression(node.Token, operator, left, right)
 	//else if fn, ok = InfixMap[right.Type()][operator]; ok {

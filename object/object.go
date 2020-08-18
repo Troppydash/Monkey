@@ -31,6 +31,7 @@ type ObjectType string
 type Object interface {
 	Type() ObjectType // The type of the object
 	Inspect() string  // The ToString method
+	//GetValue() interface{}
 }
 
 // The integer wrapper
@@ -40,6 +41,9 @@ type Integer struct {
 	Hash *HashKey
 }
 
+func (i *Integer) GetValue() interface{} {
+	return i.Value
+}
 func (i *Integer) Type() ObjectType {
 	return INTEGER_OBJ
 }

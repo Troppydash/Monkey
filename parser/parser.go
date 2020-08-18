@@ -23,6 +23,7 @@ func AlmostEqual(left float64, right float64) bool {
 const (
 	_ int = iota
 	LOWEST
+	ASSIGN  // =
 	GATE    // and, or, xor
 	EQUAL   // == or !=
 	COMPARE // > or < or <= or >=
@@ -51,6 +52,7 @@ var precedences = map[token.TokenType]int{
 	token.PERCENT:  PRODUCT,
 	token.LPAREN:   CALL,
 	token.LBRACKET: INDEX,
+	token.ASSIGN:   ASSIGN,
 }
 
 // Peek the precedence of the next token in the parser
@@ -137,9 +139,11 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.LBRACKET, p.ParseArrayLiteral)
 
 	p.RegisterPrefix(token.LBRACE, p.ParseHashLiteral)
+	//p.RegisterPrefix(token.ASSIGN, p.ParsePrefixExpression)
 
 	// Setup Infix Functions
 	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
+	//p.RegisterInfix(token.ASSIGN, p.ParseInfixExpression)
 	p.RegisterInfix(token.PLUS, p.ParseInfixExpression)
 	p.RegisterInfix(token.MINUS, p.ParseInfixExpression)
 	p.RegisterInfix(token.SLASH, p.ParseInfixExpression)
@@ -241,7 +245,13 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 	}
 
 	if !p.ExpectPeek(token.ASSIGN) {
-		return nil
+		if p.PeekTokenIs(token.SEMICOLON) {
+			p.NextToken()
+		}
+		stmt.Value = &ast.Null{
+			Token: p.currentToken,
+		}
+		return stmt
 	}
 
 	p.NextToken()
@@ -379,10 +389,20 @@ type (
 
 // Parse Identifier
 func (p *Parser) ParseIdentifier() ast.Expression {
-	return &ast.Identifier{
+	ident := &ast.Identifier{
 		Token: p.currentToken,
 		Value: p.currentToken.Literal,
 	}
+	if p.PeekTokenIs(token.ASSIGN) {
+		p.NextToken()
+		p.NextToken()
+		return &ast.Assignment{
+			Token: p.currentToken,
+			Ident: ident,
+			Value: p.ParseExpression(LOWEST),
+		}
+	}
+	return ident
 }
 
 // Parse Literal
@@ -747,6 +767,15 @@ func (p *Parser) ParseNull() ast.Expression {
 		Token: p.currentToken,
 	}
 }
+
+// TODO: Broken repl
+// TODO: Fix this
+//func (p *Parser) ParseAssignmentExpression(expression ast.Expression) ast.Expression {
+//	fmt.Println("HI")
+//	return &ast.Null{
+//		Token: p.currentToken,
+//	}
+//}
 
 func FormatFloat(t float64) string {
 	return strconv.FormatFloat(t, 'f', -1, 64)
