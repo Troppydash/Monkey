@@ -1,0 +1,10 @@
+i = 12
+"Before " + i;
+
+#{
+    let i = i
+    i;
+    i = i + 12
+    i;
+}()
+"After " + i;

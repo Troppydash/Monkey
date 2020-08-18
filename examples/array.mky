@@ -1,0 +1,31 @@
+// Standard Library
+let continue = 1
+
+// forEach array
+let forEach = fn (list, func) {
+    loop(fn(t) {
+        func(list[t])
+    }, len(list))
+}
+
+// map array
+let map = fn (list, func) {
+    let newList = []
+    loop(fn(t) {
+        let result = func(list[t])
+        add(newList, result)
+    }, len(list))
+    return newList
+}
+
+let printEveryEvent = fn (list) {
+    let switch = true
+    loop(fn (t) {
+        if switch {
+            switch = false
+            list[t];
+        } else {
+            switch = true
+        }
+    }, len(list))
+}
