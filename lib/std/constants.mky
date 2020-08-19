@@ -1,5 +1,7 @@
 let continue = 1
 
-let STRING = "string"
-let NUMBER = "number"
-let BOOLEAN = "boolean"
+let STRING = "STRING"
+let NUMBER = "NUMBER"
+let BOOLEAN = "BOOLEAN"
+let HASH = "HASH"
+let ARRAY = "ARRAY"

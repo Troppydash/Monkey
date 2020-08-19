@@ -2,9 +2,17 @@
 
 // forEach array
 let forEach = fn (list, func) {
-    loop(fn(t) {
-        func(list[t])
-    }, len(list))
+    if typeof(list) == ARRAY {
+        loop(fn(t) {
+            func(list[t])
+        }, len(list))
+    } else if typeof(list) == HASH {
+        let keys = keys(list)
+        loop(fn(i) {
+            let key = keys[i]
+            func(key, list[key])
+        }, len(keys))
+    }
 }
 
 // map array

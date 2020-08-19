@@ -1,4 +1,8 @@
 let ask = #{
-    "Welcome to the Monkey Survey!";
+    "Welcome to the Monkey Quiz!";
     "Created by Troppydash";
+}
+
+let firstQuestion = #{
+    'What is the name of this programming language?';
 }

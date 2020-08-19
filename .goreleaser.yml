@@ -24,6 +24,9 @@ archives:
     386: i386
     amd64: x86_64
   format: zip
+  files:
+    - lib/**/*
+    - script/**/*
 checksum:
   name_template: 'checksums.txt'
 snapshot:

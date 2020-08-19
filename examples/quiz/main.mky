@@ -1,10 +1,16 @@
 include("std")
 include("Asker.mky")
 
-//ask()
+ask()
 
-let rang = range(100)
+let hash = {
+    "a": "b",
+    "c": "d",
+}
 
-map(rang) #{
-    5
-};
+// TODO sort out types so we can type check
+forEach(hash) fn(k, v) {
+    k + " " + v;
+}
+
+//typeof(hash);

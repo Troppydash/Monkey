@@ -36,6 +36,18 @@ func init() {
 	builtins = map[string]*object.Builtin{
 		// TODO: Math Functions
 
+		"typeof": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return WrongArgumentsAmount("typeof", len(args), "1", token)
+				}
+
+				return &object.String{
+					Value: string(args[0].Type()),
+				}
+			},
+		},
+
 		// TODO: Reorder function parameter
 		"include": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -76,11 +88,37 @@ func init() {
 					return &object.Integer{Value: float64(len(arg.Value))}
 				case *object.Array:
 					return &object.Integer{Value: float64(len(arg.Elements))}
+				case *object.Hash:
+					return &object.Integer{Value: float64(len(arg.Pairs))}
 				default:
 					return ArgumentNotSupported("len", args[0].Type(), token)
 				}
 			},
 		},
+		"keys": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return WrongArgumentsAmount("keys", len(args), "1", token)
+				}
+
+				hash, ok := args[0].(*object.Hash)
+				if !ok {
+					return ArgumentNotSupported("keys", args[0].Type(), token)
+
+				}
+				keys := make([]object.Object, len(hash.Pairs))
+				i := 0
+				for _, v := range hash.Pairs {
+					keys[i] = v.Key
+					i++
+				}
+
+				return &object.Array{
+					Elements: keys,
+				}
+			},
+		},
+
 		"range": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 
