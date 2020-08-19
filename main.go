@@ -26,12 +26,14 @@ func main() {
 		//LinkFile("std", env)
 		// Compile
 		old := tmp.CurrentProcessingFileDirectory
-		p, e := runner.GetInstance().Compile(filename)
+		abs := runner.GetInstance().ToAbsolute(filename)
+		p, e := runner.GetInstance().CompileAbs(abs)
 		if e != nil {
 			fmt.Printf("Failed to compile file %q\n", filename)
 			return
 		}
 		evaluator.Eval(p, env)
+		runner.GetInstance().Pop(abs)
 		tmp.CurrentProcessingFileDirectory = old
 		return
 	}
@@ -51,10 +53,10 @@ func main() {
 	repl.Start(os.Stdin, os.Stdout)
 }
 
-func LinkFile(libraryName string, env *object.Environment) {
-	p, e := runner.GetInstance().Compile(libraryName)
-	if e != nil {
-		panic("Failed to link library " + libraryName)
-	}
-	evaluator.Eval(p, env)
-}
+//func LinkFile(libraryName string, env *object.Environment) {
+//	p, e := runner.GetInstance().Compile(libraryName)
+//	if e != nil {
+//		panic("Failed to link library " + libraryName)
+//	}
+//	evaluator.Eval(p, env)
+//}

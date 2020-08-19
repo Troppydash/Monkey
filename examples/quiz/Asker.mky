@@ -1,4 +1,4 @@
 let ask = #{
-    "Welcome to Monkey Survey!";
-    "Created by Troppydash"
+    "Welcome to the Monkey Survey!";
+    "Created by Troppydash";
 }

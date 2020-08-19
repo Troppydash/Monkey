@@ -25,7 +25,7 @@ func GetInstance() *Runner {
 }
 
 func (r *Runner) CompileAbs(filename string) (*ast.Program, error) {
-	content, err := r.ReadFile(path.Join(tmp.CurrentProcessingFileDirectory, filename))
+	content, err := r.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -40,12 +40,17 @@ func (r *Runner) Pop(filename string) {
 		}
 	}
 
-	for i := len(r.files); i > len(r.files)-index; i++ {
-		r.files = r.files[:1]
+	end := len(r.files) - index - 1
+	for i := len(r.files) - 1; i > end; i-- {
+		r.files = remove(r.files, len(r.files)-1)
 	}
+	fmt.Printf("")
+}
+func remove(slice []string, s int) []string {
+	return append(slice[:s], slice[s+1:]...)
 }
 
-func (r *Runner) Compile(location string) (*ast.Program, error) {
+func (r *Runner) ToAbsolute(location string) string {
 	var filename string
 	// if is a std include
 	if !strings.HasSuffix(location, ".mky") {
@@ -59,8 +64,12 @@ func (r *Runner) Compile(location string) (*ast.Program, error) {
 		tmp.SetAbsoluteDirectory(path.Dir(filename))
 	}
 
-	return r.CompileAbs(path.Base(filename))
+	return filename
 }
+
+//func (r *Runner) Compile(location string) (*ast.Program, error) {
+//	return r.CompileAbs(path.Base(filename))
+//}
 
 func (r *Runner) ParseProgram(content string, filename string) *ast.Program {
 	l := lexer.New(content, filename)

@@ -1,5 +1,10 @@
 include("std")
 include("Asker.mky")
-include("array")
 
-continue;
+//ask()
+
+let rang = range(100)
+
+map(rang) #{
+    5
+};

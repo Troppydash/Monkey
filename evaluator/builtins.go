@@ -51,13 +51,14 @@ func init() {
 				filename := str.Value
 
 				old := tmp.CurrentProcessingFileDirectory
-				p, e := runner.GetInstance().Compile(filename)
+				abs := runner.GetInstance().ToAbsolute(filename)
+				p, e := runner.GetInstance().CompileAbs(abs)
 				if e != nil {
 					return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
 
 				}
 				Eval(p, env)
-				runner.GetInstance().Pop(filename)
+				runner.GetInstance().Pop(abs)
 				tmp.CurrentProcessingFileDirectory = old
 
 				return NULL
