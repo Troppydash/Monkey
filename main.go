@@ -1,8 +1,11 @@
 package main
 
 import (
+	"Monkey/evaluator"
+	"Monkey/object"
 	"Monkey/repl"
 	"Monkey/runner"
+	"Monkey/tmp"
 	"fmt"
 	"os"
 	"os/user"
@@ -13,11 +16,23 @@ func main() {
 	// Run File
 	if len(os.Args) == 2 {
 
+		// Get filename
 		filename := os.Args[1]
-		// TODO: Make everything runner
-		r := runner.New()
-		r.Execute(filename)
 
+		// Create env
+		env := object.NewEnvironment()
+
+		// Link std
+		//LinkFile("std", env)
+		// Compile
+		old := tmp.CurrentProcessingFileDirectory
+		p, e := runner.GetInstance().Compile(filename)
+		if e != nil {
+			fmt.Printf("Failed to compile file %q\n", filename)
+			return
+		}
+		evaluator.Eval(p, env)
+		tmp.CurrentProcessingFileDirectory = old
 		return
 	}
 
@@ -34,4 +49,12 @@ func main() {
 
 	// Start the repl
 	repl.Start(os.Stdin, os.Stdout)
+}
+
+func LinkFile(libraryName string, env *object.Environment) {
+	p, e := runner.GetInstance().Compile(libraryName)
+	if e != nil {
+		panic("Failed to link library " + libraryName)
+	}
+	evaluator.Eval(p, env)
 }

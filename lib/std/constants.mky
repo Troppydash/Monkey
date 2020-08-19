@@ -1,0 +1,5 @@
+let continue = 1
+
+let STRING = "string"
+let NUMBER = "number"
+let BOOLEAN = "boolean"

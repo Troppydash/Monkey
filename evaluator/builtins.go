@@ -1,16 +1,13 @@
 package evaluator
 
 import (
-	"Monkey/lexer"
 	"Monkey/object"
-	"Monkey/parser"
+	"Monkey/runner"
 	"Monkey/tmp"
 	"Monkey/token"
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
 	"strconv"
 	"strings"
 )
@@ -46,22 +43,22 @@ func init() {
 					return WrongArgumentsAmount("include", len(args), "1", token)
 				}
 
-				filename, ok := args[0].(*object.String)
+				str, ok := args[0].(*object.String)
 				if !ok {
 					return NULL
 				}
 
-				content, err := ioutil.ReadFile(path.Join(path.Dir(tmp.Filename), filename.Value))
-				if err != nil {
-					fmt.Println("An Error occurred reading the file")
-					return NULL
+				filename := str.Value
+
+				old := tmp.CurrentProcessingFileDirectory
+				p, e := runner.GetInstance().Compile(filename)
+				if e != nil {
+					return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
+
 				}
-
-				l := lexer.New(string(content), path.Join(tmp.Filename, filename.Value))
-				p := parser.New(l)
-				program := p.ParseProgram()
-
-				Eval(program, env)
+				Eval(p, env)
+				runner.GetInstance().Pop(filename)
+				tmp.CurrentProcessingFileDirectory = old
 
 				return NULL
 			},

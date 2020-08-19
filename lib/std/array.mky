@@ -1,5 +1,4 @@
 // Standard Library
-let continue = 1
 
 // forEach array
 let forEach = fn (list, func) {
@@ -16,16 +15,4 @@ let map = fn (list, func) {
         add(newList, result)
     }, len(list))
     return newList
-}
-
-let printEveryEven = fn (list) {
-    let switch = true
-    loop(fn (t) {
-        if switch {
-            switch = false
-            list[t];
-        } else {
-            switch = true
-        }
-    }, len(list))
 }

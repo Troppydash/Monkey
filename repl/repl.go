@@ -10,7 +10,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 )
 
@@ -28,10 +27,6 @@ func PrintParserErrors(out io.Writer, errors []*parser.ParseError) {
 
 // Start the REPL by repeating asking for input
 func Start(in io.Reader, out io.Writer) {
-
-	// TODO: Fix
-	path, _ := os.Getwd()
-	tmp.Filename = path
 
 	// Create a new Scanner
 	scanner := bufio.NewScanner(in)
@@ -87,6 +82,11 @@ func Start(in io.Reader, out io.Writer) {
 
 func ParseOptions(out io.Writer, line string) {
 	switch line {
+	case "--list":
+		fmt.Println("CD:", tmp.CurrentDirectory)
+		fmt.Println("MKYROOT:", tmp.ExeDirectory)
+		fmt.Println("STDDIR:", tmp.STDDirectory)
+
 	case "--on nicer":
 		options.NicerToString = true
 		io.WriteString(out, "Enabled Nicer ToString")

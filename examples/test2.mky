@@ -1,3 +1,0 @@
-include("array.mky")
-
-map(range(200)) #{ "Yes" };
