@@ -2,8 +2,6 @@ package evaluator
 
 import (
 	"Monkey/object"
-	"Monkey/runner"
-	"Monkey/tmp"
 	"Monkey/token"
 	"bufio"
 	"fmt"
@@ -62,16 +60,17 @@ func init() {
 
 				filename := str.Value
 
-				old := tmp.CurrentProcessingFileDirectory
-				abs := runner.GetInstance().ToAbsolute(filename)
-				p, e := runner.GetInstance().CompileAbs(abs)
-				if e != nil {
+				err := LinkAndEval(filename, env)
+				//old := tmp.CurrentProcessingFileDirectory
+				//abs := runner.GetInstance().ToAbsolute(filename)
+				//p, e := runner.GetInstance().CompileAbs(abs)
+				if err != nil {
 					return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
 
 				}
-				Eval(p, env)
-				runner.GetInstance().Pop(abs)
-				tmp.CurrentProcessingFileDirectory = old
+				//Eval(p, env)
+				//runner.GetInstance().Pop(abs)
+				//tmp.CurrentProcessingFileDirectory = old
 
 				return NULL
 			},

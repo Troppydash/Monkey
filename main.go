@@ -4,8 +4,6 @@ import (
 	"Monkey/evaluator"
 	"Monkey/object"
 	"Monkey/repl"
-	"Monkey/runner"
-	"Monkey/tmp"
 	"fmt"
 	"os"
 	"os/user"
@@ -25,16 +23,18 @@ func main() {
 		// Link std
 		//LinkFile("std", env)
 		// Compile
-		old := tmp.CurrentProcessingFileDirectory
-		abs := runner.GetInstance().ToAbsolute(filename)
-		p, e := runner.GetInstance().CompileAbs(abs)
-		if e != nil {
+		err := evaluator.LinkAndEval(filename, env)
+
+		//old := tmp.CurrentProcessingFileDirectory
+		//abs := runner.GetInstance().ToAbsolute(filename)
+		//p, e := runner.GetInstance().CompileAbs(abs)
+		if err != nil {
 			fmt.Printf("Failed to compile file %q\n", filename)
 			return
 		}
-		evaluator.Eval(p, env)
-		runner.GetInstance().Pop(abs)
-		tmp.CurrentProcessingFileDirectory = old
+		//evaluator.Eval(p, env)
+		//runner.GetInstance().Pop(abs)
+		//tmp.CurrentProcessingFileDirectory = old
 		return
 	}
 
