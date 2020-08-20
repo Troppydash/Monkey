@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+// TODO: Stop importing twice
+
 // Singleton
 var runner = &Runner{}
 
@@ -54,7 +56,7 @@ func (r *Runner) ToAbsolute(location string) string {
 	var filename string
 	// if is a std include
 	if !strings.HasSuffix(location, ".mky") {
-		filename = path.Join(tmp.STDDirectory, location+".mky")
+		filename = path.Join(tmp.STDDirectory, path.Base(location), location+".mky")
 		tmp.SetAbsoluteDirectory(path.Dir(filename))
 	} else {
 		re := regexp.MustCompile("[/\\\\]")

@@ -1,0 +1,54 @@
+let numberCorrect = 0
+
+let questions = [
+    {
+        'question': 'What language is this program written in?',
+        'choices': ['Javascript', 'Rust', 'Monkey', 'Python'],
+        'answer': 'Monkey',
+    },
+    {
+       'question': 'What programming language is the compiler for Monkey written in?',
+       'choices': ['Golang', 'Monkey', 'Cpp', 'C'],
+       'answer': 'Golang',
+    },
+    {
+       'question': 'What\'s troppy\'s favorite programming language',
+       'choices': ['Monkey', 'Monkey', 'Monkey', 'Javascript'],
+       'answer': 'Javascript',
+    },
+    {
+       'question': 'Do you like this quiz?',
+       'choices': ['Yes', 'Yes', 'Yes', 'No'],
+       'answer': 'Yes',
+    },
+
+]
+
+let askQuestion = fn (number) {
+    let question = questions[number]
+    question['question'];
+    tmp = "Choices: "
+    forEach(question['choices']) fn(choice) {
+        tmp = tmp + choice + ' '
+    }
+    tmp;
+
+    let input = ""
+    let cont = false
+    while(#{
+        cont == false
+    }) #{
+        input = take("input")
+        if !(contains(question['choices'], input)) {
+            "Your input '" + input + "' isnt even in the choices, Try Again";
+            tmp;
+        } else {
+            cont = true
+        }
+    }
+
+    if input == question['answer'] {
+        numberCorrect = numberCorrect + 1
+    }
+}
+

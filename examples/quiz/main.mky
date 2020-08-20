@@ -1,16 +1,13 @@
 include("std")
-include("Asker.mky")
+include("questions.mky")
 
-ask()
 
-let hash = {
-    "a": "b",
-    "c": "d",
-}
+"Welcome to the Monkey Quiz!";
+"Created by Troppydash";
 
-// TODO sort out types so we can type check
-forEach(hash) fn(k, v) {
-    k + " " + v;
-}
+loop(fn(i) {
+    "Question " + (i+1);
+    askQuestion(i)
+}, len(questions))
 
-//typeof(hash);
+"Your result: " + numberCorrect + " out of " + len(questions);

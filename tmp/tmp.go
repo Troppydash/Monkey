@@ -1,6 +1,7 @@
 package tmp
 
 import (
+	"fmt"
 	"os"
 	"path"
 )
@@ -29,11 +30,13 @@ func init() {
 
 	EXE := os.Getenv("MKYROOT")
 	if len(EXE) == 0 {
-		panic("Cannot find executable location")
+		fmt.Fprintln(os.Stderr, "Cannot find executable location, Proceeding with the current directory")
+		//panic("Cannot find executable location")
+		EXE = CD
 	}
 	ExeDirectory = EXE
 
-	STDDirectory = path.Join(ExeDirectory, "lib", "std")
+	STDDirectory = path.Join(ExeDirectory, "lib")
 
 	CurrentProcessingFileDirectory = CD
 }

@@ -1,5 +1,3 @@
-// Standard Library
-
 // forEach array
 let forEach = fn (list, func) {
     if typeof(list) == ARRAY {
@@ -17,10 +15,32 @@ let forEach = fn (list, func) {
 
 // map array
 let map = fn (list, func) {
-    let newList = []
-    loop(fn(t) {
-        let result = func(list[t])
-        add(newList, result)
-    }, len(list))
-    return newList
+    if typeof(list) == ARRAY {
+        let newList = []
+        forEach(list) fn(e) {
+            let result = func(e)
+            add(newList, result)
+        }
+        return newList
+    } else if typeof(list) == HASH {
+        let newHash = {}
+        forEach(list) fn(k, v) {
+            let result = func(k, v)
+            // TODO: Fix this
+            // newHash[k] = result
+        }
+        return newHash
+    }
+}
+
+let contains = fn(list, item) {
+    if typeof(list) == ARRAY {
+        let cont = false
+        forEach(list) fn(e) {
+            if e == item {
+                cont = true
+            }
+        }
+        return cont
+    }
 }
