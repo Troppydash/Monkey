@@ -1,5 +1,5 @@
-include("std")
-include("array")
-include("..\examples\quiz\main.mky")
+// TODO: add new line parsing
+let age = 16
+let message = "I am #{age} years old"
 
-STRING;
+message;

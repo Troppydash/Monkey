@@ -36,9 +36,16 @@ func NewError(data *token.TokenData, format string, a ...interface{}) *object.Er
 	return message
 }
 
+func CheckError(obj object.Object) bool {
+	if !options.FatalErrors {
+		return false
+	}
+	return obj.Type() == object.ERROR_OBJ
+}
+
 // Modified here
 // Is the object an error
-func CheckError(obj object.Object) bool {
+func LogError(obj object.Object) bool {
 	if obj == nil {
 		return false
 	}
@@ -75,14 +82,22 @@ func IsTruthful(obj object.Object) bool {
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 
+	// Good
 	case *ast.Program:
-		return EvalProgram(node, env)
+		result := EvalProgram(node, env)
+		LogError(result)
+		return result
 
+		// Good
 	case *ast.ExpressionStatement:
-		return Eval(node.Expression, env)
+		result := Eval(node.Expression, env)
+		//CheckError(result)
+		return result
 
 	case *ast.PrintExpressionStatement:
-		return EvalPrintExpressionStatement(node.Token, node.Expression, env)
+		result := EvalPrintExpressionStatement(node.Token, node.Expression, env)
+		//CheckError(result)
+		return result
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -98,10 +113,13 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
+		// TODO: Add chck error checks everywhere
 		if CheckError(right) {
 			return right
 		}
-		return EvalPrefixExpression(node.Operator, right, node.Token)
+		result := EvalPrefixExpression(node.Operator, right, node.Token)
+		//CheckError(result)
+		return result
 
 	case *ast.InfixExpression:
 		// We need to short circuit AND or OR gates
@@ -132,12 +150,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.AssignmentExpression:
 		val := Eval(node.Value, env)
 		if CheckError(val) {
-			return NewFatalError(node.Token.ToTokenData(), "Error evaluating expression")
+			return val
 		}
 
 		if _, ok := env.Get(node.Ident.Value); !ok {
-			env.Store(node.Ident.Value, val)
-			return val
+			// Cannot get the variable
+			return NewFatalError(node.Token.ToTokenData(), "Cannot find variable %s in the current scope", node.Ident.Value)
 		}
 		env.Replace(node.Ident.Value, val)
 		return val
@@ -163,6 +181,16 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return ApplyFunction(node.Token, function, args, env)
 
 	case *ast.StringLiteral:
+		//value := node.Value
+		//
+		//// do the parsing part
+		//for index := 0; index < len(value); index++ {
+		//	c := value[index]
+		//	if c == '#' && value[index+1] == '{' {
+		//		Eval()
+		//	}
+		//}
+
 		return &object.String{Value: node.Value}
 
 	case *ast.ArrayLiteral:
@@ -403,7 +431,7 @@ func EvalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 
 		if result != nil {
 			rt := result.Type()
-			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+			if rt == object.RETURN_VALUE_OBJ || CheckError(result) {
 				return result
 			}
 		}
@@ -709,6 +737,10 @@ func NativeBoolToBooleanObject(value bool) object.Object {
 // Eval Print ExpressionStmt
 func EvalPrintExpressionStatement(token token.Token, exp ast.Expression, env *object.Environment) object.Object {
 	result := Eval(exp, env)
+	if CheckError(result) {
+		return result
+	}
+
 	builtins["writeLine"].Fn(token, env, result)
 	//fmt.Println(result.Inspect())
 	return NULL
@@ -725,7 +757,9 @@ func EvalProgram(program *ast.Program, env *object.Environment) object.Object {
 		case *object.ReturnValue:
 			return result.(*object.ReturnValue).Value
 		case *object.Error:
-			return result
+			if options.FatalErrors {
+				return result
+			}
 		}
 	}
 

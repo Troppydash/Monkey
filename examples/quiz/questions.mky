@@ -27,7 +27,7 @@ let questions = [
 let askQuestion = fn (number) {
     let question = questions[number]
     question['question'];
-    tmp = "Choices: "
+    let tmp = "Choices: "
     forEach(question['choices']) fn(choice) {
         tmp = tmp + choice + ' '
     }

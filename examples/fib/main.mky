@@ -1,0 +1,17 @@
+let fib = fn(n) {
+    if n < 2 {
+        return n
+    }
+    return fib(n-1) + fib(n-2)
+}
+
+while(#{true}) #{
+   let input = takeLine("enter a valid number")
+   input = number!(input)
+   if error?(input) {
+       "An error occurred: ";
+       string(input);
+   } else {
+       fib(input);
+   }
+}

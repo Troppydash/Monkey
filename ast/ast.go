@@ -400,6 +400,21 @@ func (ce *CallExpression) ToString() string {
 	return out.String()
 }
 
+type ExtraStringLiteral struct {
+	Token        token.Token
+	Value        []string
+	Replacements []Expression
+}
+
+func (sl *ExtraStringLiteral) ExpressionNode() {}
+func (sl *ExtraStringLiteral) TokenLiteral() string {
+	return sl.Token.Literal
+}
+func (sl *ExtraStringLiteral) ToString() string {
+	// TODO: Do this
+	return sl.Token.Literal
+}
+
 // String
 type StringLiteral struct {
 	Token token.Token
@@ -411,7 +426,7 @@ func (sl *StringLiteral) TokenLiteral() string {
 	return sl.Token.Literal
 }
 func (sl *StringLiteral) ToString() string {
-	return sl.Token.Literal
+	return sl.Value
 }
 
 // Array object

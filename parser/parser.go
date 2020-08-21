@@ -622,7 +622,12 @@ func (p *Parser) ParseCallExpression(function ast.Expression) ast.Expression {
 		Token:    p.currentToken,
 		Function: function,
 	}
-	exp.Arguments = p.ParseExpressionList(token.RPAREN)
+
+	if p.CurrentTokenIs(token.LPAREN) {
+		exp.Arguments = p.ParseExpressionList(token.RPAREN)
+	} else {
+		exp.Arguments = []ast.Expression{}
+	}
 
 	// So that last parameter can be a function
 	if p.PeekTokenIs(token.HASH) {

@@ -265,6 +265,9 @@ func init() {
 						result = ApplyFunction(token, fn, []object.Object{
 							t,
 						}, env)
+						if CheckError(result) {
+							return result
+						}
 					}
 
 				case 2:
@@ -277,9 +280,12 @@ func init() {
 
 					for ; t.Value < times; t.Value++ {
 						//env.Store("t", &object.Integer{Value: float64(t)})
-						ApplyFunction(token, fn, []object.Object{
+						result := ApplyFunction(token, fn, []object.Object{
 							t,
 						}, env)
+						if CheckError(result) {
+							return result
+						}
 					}
 				}
 				return NULL
@@ -303,9 +309,18 @@ func init() {
 				exe := args[1].(*object.Function)
 
 				result := ApplyFunction(token, fn, []object.Object{}, env)
+				if CheckError(result) {
+					return result
+				}
 				for IsTruthful(result) {
-					ApplyFunction(token, exe, []object.Object{}, env)
+					res := ApplyFunction(token, exe, []object.Object{}, env)
+					if CheckError(res) {
+						return res
+					}
 					result = ApplyFunction(token, fn, []object.Object{}, env)
+					if CheckError(result) {
+						return result
+					}
 				}
 				return NULL
 			},
@@ -418,7 +433,7 @@ func init() {
 				}
 			},
 		},
-		"string!": {
+		"string": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) > 1 {
 					return WrongArgumentsAmount("string!", len(args), "1", token)
@@ -471,7 +486,6 @@ func init() {
 						return NewError(token.ToTokenData(), "casting to number not successful. got=%s",
 							s.Value)
 					}
-
 					return &object.Integer{
 						Value: v,
 					}
