@@ -120,6 +120,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.OR, p.ParsePrefixExpression)
 	p.RegisterPrefix(token.XOR, p.ParsePrefixExpression)
 	p.RegisterPrefix(token.PERCENT, p.ParsePrefixExpression)
+	p.RegisterPrefix(token.ASSIGN, p.ParsePrefixExpression)
 
 	p.RegisterPrefix(token.TRUE, p.ParseBoolean)
 	p.RegisterPrefix(token.FALSE, p.ParseBoolean)
@@ -791,8 +792,6 @@ func (p *Parser) ParseNull() ast.Expression {
 	}
 }
 
-// TODO: Broken repl
-// TODO: Fix this
 //func (p *Parser) ParseAssignmentExpression(expression ast.Expression) ast.Expression {
 //	fmt.Println("HI")
 //	return &ast.Null{

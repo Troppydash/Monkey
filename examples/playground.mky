@@ -1,5 +1,8 @@
 // TODO: add new line parsing
-let age = 16
-let message = "I am #{age} years old"
+// todo: fix array assignment
 
-message;
+include("std")
+
+#{
+    'yes';
+}()

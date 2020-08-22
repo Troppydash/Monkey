@@ -514,6 +514,19 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 		return right
 	}
 
+	// TODO maybe later
+	//if operator == token.ASSIGN {
+	//	if lft, ok := node.Left.(*ast.IndexExpression); ok {
+	//		for {
+	//			if l, ok := lft.Left.(*ast.IndexExpression); ok {
+	//				lft = l
+	//			} else {
+	//				break
+	//			}
+	//		}
+	//		fmt.Println(lft)
+	//	}
+	//}
 	// Try ident
 	//switch operator {
 	//case token.ASSIGN:
