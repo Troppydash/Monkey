@@ -1,8 +1,16 @@
-// TODO: add new line parsing
-// todo: fix array assignment
-
 include("std")
 
-#{
-    'yes';
-}()
+
+let terry = {
+    'name': 'terry',
+    'age': 16,
+    'hobby': 'video games'
+}
+
+terry;
+map(terry) fn(k, v) {
+    if k == 'name' {
+        return 'TERRY!'
+    }
+    "NO"
+};

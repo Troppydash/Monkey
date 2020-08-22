@@ -26,7 +26,7 @@ let map = fn (list, func) {
         let newHash = {}
         forEach(list) fn(k, v) {
             let result = func(k, v)
-            // TODO: Fix this
+            set(newHash, k, result)
             // newHash[k] = result
         }
         return newHash

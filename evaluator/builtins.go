@@ -326,6 +326,41 @@ func init() {
 			},
 		},
 
+		"set": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				if !(len(args) == 3) {
+					return WrongArgumentsAmount("get", len(args), "3", token)
+				}
+
+				if hash, ok := args[0].(*object.Hash); ok {
+
+					key, ok := args[1].(object.Hashable)
+					if !ok {
+						return NewFatalError(token.ToTokenData(), "unusable as hash key: %s", args[1].Type())
+					}
+					pair, ok := hash.Pairs[key.HashKey()]
+					if !ok {
+						newPair := object.HashPair{
+							Key:   args[1],
+							Value: args[2],
+						}
+						hash.Pairs[key.HashKey()] = newPair
+					} else {
+						pair.Value = args[2]
+					}
+
+				} else if array, ok := args[0].(*object.Array); ok {
+					key, ok := args[1].(*object.Integer)
+					if !ok {
+						return NewFatalError(token.ToTokenData(), "array index can only be type integer, got %s", args[1].Type())
+					}
+					array.Elements[int(key.Value)] = args[2]
+				}
+
+				return args[2]
+			},
+		},
+
 		// IO
 		"format": {
 			// TODO: Implem
