@@ -1,4 +1,4 @@
-// forEach array
+// forEach a hash/array
 let forEach = fn (list, func) {
     if typeof(list) == ARRAY {
         loop(fn(t) {
@@ -13,7 +13,7 @@ let forEach = fn (list, func) {
     }
 }
 
-// map array
+// returns a new hash/array base on a forEach loop
 let map = fn (list, func) {
     if typeof(list) == ARRAY {
         let newList = []
@@ -27,12 +27,12 @@ let map = fn (list, func) {
         forEach(list) fn(k, v) {
             let result = func(k, v)
             set(newHash, k, result)
-            // newHash[k] = result
         }
         return newHash
     }
 }
 
+// whether an array contains an item
 let contains = fn(list, item) {
     if typeof(list) == ARRAY {
         let cont = false

@@ -1,5 +1,6 @@
-let i = {
-'yes': 'no'
-}
-i;
+
+
+
+include("std")
+
 "Fini";

@@ -738,7 +738,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 			"[((((a) + ((b) * (c))) + ((d) / (e))) - (f))]",
 		},
 		{
-			"3 + 4; -5 * 5",
+			"3 + 4\n -5 * 5",
 			"[((3) + (4)) ((-(5)) * (5))]",
 		},
 		{
@@ -1062,9 +1062,9 @@ func TestIdentifierExpression(t *testing.T) {
 // Test the parsing of the return statements
 func TestReturnStatements(t *testing.T) {
 	input := `
-return 5;
-return 10;
-return 921391;`
+return 5
+return 10
+return 921391`
 
 	l := lexer.New(input, "testReturn")
 	p := New(l)
@@ -1096,9 +1096,9 @@ func TestLetStatementsFully(t *testing.T) {
 		expectedIdentifier string
 		expectedValue      interface{}
 	}{
-		{"let x = 5;", "x", 5},
-		{"let y = true;", "y", true},
-		{"let foobar = y;", "foobar", "y"},
+		{"let x = 5", "x", 5},
+		{"let y = true", "y", true},
+		{"let foobar = y", "foobar", "y"},
 	}
 
 	for _, tt := range tests {
@@ -1126,10 +1126,10 @@ func TestLetStatementsFully(t *testing.T) {
 
 // Test the parsing of the let statements
 func TestLetStatements(t *testing.T) {
-	input := `
-let x = 5;
-let y = 10;
-let foobar = 848484;`
+	input := `let x = 5
+let y = 10
+let foobar = 848484
+`
 
 	l := lexer.New(input, "testLet")
 	p := New(l)

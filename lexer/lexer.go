@@ -95,9 +95,15 @@ func (l *Lexer) NextToken() token.Token {
 			tok = NewToken(token.ASSIGN, l.ch)
 		}
 	case '\n':
+		tok = NewToken(token.NEWLINE, l.ch)
+		//l.ReadChar()
+		// Parse all the remaining ones
+		for l.PeekChar() == '\n' || l.PeekChar() == '\r' {
+			l.ReadChar()
+		}
 	case '\r':
 		tok = NewToken(token.NEWLINE, l.ch)
-		l.ReadChar()
+		//l.ReadChar()
 		// Parse all the remaining ones
 		for l.PeekChar() == '\n' || l.PeekChar() == '\r' {
 			l.ReadChar()
@@ -283,7 +289,7 @@ func (l *Lexer) SkipLine() {
 	for l.ch != '\n' && l.ch != '\r' && l.ch != '\x00' {
 		l.ReadChar()
 	}
-	l.ReadChar()
+	//l.ReadChar()
 }
 
 // Eat up all the whitespace

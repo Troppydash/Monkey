@@ -7,21 +7,21 @@ import (
 
 // Test for Token Parsing
 func TestNextToken(t *testing.T) {
-	input := `let five = 5;
-let ten = 10;
+	input := `let five = 5
+let ten = 10
 
 let add = fn(x, y) {
     x + y;
-};
+}
 
-let result = add(five, ten);
+let result = add(five, ten)
 !-/*5;
 5 < 10 > 5;
 
 if (5 < 10) {
-    return true;
+    return true
 } else {
-    return false;
+    return false
 }
 
 10 == 10;
@@ -48,12 +48,12 @@ if (5 < 10) {
 		{token.IDENT, "five", 1, 5},
 		{token.ASSIGN, "=", 1, 10},
 		{token.INT, "5", 1, 12},
-		{token.SEMICOLON, ";", 1, 13},
+		//{token.SEMICOLON, ";", 1, 13},
 		{token.LET, "let", 2, 1},
 		{token.IDENT, "ten", 2, 5},
 		{token.ASSIGN, "=", 2, 9},
 		{token.INT, "10", 2, 11},
-		{token.SEMICOLON, ";", 2, 13},
+		//{token.SEMICOLON, ";", 2, 13},
 		{token.LET, "let", 4, 1},
 		{token.IDENT, "add", 4, 5},
 		{token.ASSIGN, "=", 4, 9},
@@ -69,7 +69,7 @@ if (5 < 10) {
 		{token.IDENT, "y", 5, 9},
 		{token.SEMICOLON, ";", 5, 10},
 		{token.RBRACE, "}", 6, 1},
-		{token.SEMICOLON, ";", 6, 2},
+		//{token.SEMICOLON, ";", 6, 2},
 		{token.LET, "let", 8, 1},
 		{token.IDENT, "result", 8, 5},
 		{token.ASSIGN, "=", 8, 12},
@@ -79,7 +79,7 @@ if (5 < 10) {
 		{token.COMMA, ",", 8, 22},
 		{token.IDENT, "ten", 8, 24},
 		{token.RPAREN, ")", 8, 27},
-		{token.SEMICOLON, ";", 8, 28},
+		//{token.SEMICOLON, ";", 8, 28},
 		{token.BANG, "!", 9, 1},
 		{token.MINUS, "-", 9, 2},
 		{token.SLASH, "/", 9, 3},
@@ -103,14 +103,14 @@ if (5 < 10) {
 
 		{token.RETURN, "return", 10, 11},
 		{token.TRUE, "true", 10, 11},
-		{token.SEMICOLON, ";", 10, 11},
+		//{token.SEMICOLON, ";", 10, 11},
 
 		{token.RBRACE, "}", 10, 11},
 		{token.ELSE, "else", 10, 11},
 		{token.LBRACE, "{", 10, 11},
 		{token.RETURN, "return", 10, 11},
 		{token.FALSE, "false", 10, 11},
-		{token.SEMICOLON, ";", 10, 11},
+		//{token.SEMICOLON, ";", 10, 11},
 		{token.RBRACE, "}", 10, 11},
 
 		{token.INT, "10", 10, 11},
@@ -152,6 +152,9 @@ if (5 < 10) {
 	l := New(input, "TestFile")
 	for i, tt := range tests {
 		tok := l.NextToken()
+		for tok.Type == token.NEWLINE {
+			tok = l.NextToken()
+		}
 
 		if tok.Type != tt.expectedType {
 			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",

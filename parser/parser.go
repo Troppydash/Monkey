@@ -137,7 +137,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.LBRACKET, p.ParseArrayLiteral)
 
 	p.RegisterPrefix(token.LBRACE, p.ParseHashLiteral)
-	p.RegisterPrefix(token.NEWLINE, p.ParseNewLine)
+	//p.RegisterPrefix(token.NEWLINE, p.ParseNewLine)
 	//p.RegisterPrefix(token.ASSIGN, p.ParsePrefixExpression)
 
 	// Setup Infix Functions
@@ -203,11 +203,17 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	// While currentToken is not EOF
 	for p.currentToken.Type != token.EOF {
+		if p.CurrentTokenIs(token.NEWLINE) {
+			p.NextToken()
+			continue
+		}
 		// Parse a statement
 		stmt := p.ParseStatement()
 		if !p.IsPeekEndOfLine() {
-			// TODO: Warnings
-			p.GenerateErrorForToken("Peek token is not a new line", &p.peekToken)
+			if !p.CurrentTokenIs(token.NEWLINE) {
+				// TODO: Warnings
+				p.GenerateErrorForToken("Peek token is not a new line", &p.peekToken)
+			}
 		} else {
 			p.NextToken()
 		}
@@ -275,6 +281,7 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 	}
 
 	p.NextToken()
+	//p.RemoveNewLines()
 	p.NextToken()
 
 	stmt.Value = p.ParseExpression(LOWEST)
@@ -490,9 +497,11 @@ func (p *Parser) ParseBoolean() ast.Expression {
 
 // Parse grouped expression
 func (p *Parser) parseGroupedExpression() ast.Expression {
+	p.RemoveNewLines()
 	p.NextToken()
 	exp := p.ParseExpression(LOWEST)
 
+	p.RemoveNewLines()
 	if !p.ExpectPeek(token.RPAREN) {
 		return nil
 	}
@@ -569,6 +578,7 @@ func (p *Parser) ParseBlockStatement() *ast.BlockStatement {
 	block.Statements = []ast.Statement{}
 
 	// Advance pass the curly brace token
+	p.RemoveNewLines()
 	p.NextToken()
 
 	for !p.CurrentTokenIs(token.RBRACE) && !p.CurrentTokenIs(token.EOF) {
@@ -576,6 +586,7 @@ func (p *Parser) ParseBlockStatement() *ast.BlockStatement {
 		if stmt != nil {
 			block.Statements = append(block.Statements, stmt)
 		}
+		p.RemoveNewLines()
 		p.NextToken()
 	}
 	return block
@@ -585,6 +596,8 @@ func (p *Parser) ParseHashFunctionLiteral() ast.Expression {
 	fnLit := &ast.FunctionLiteral{Token: p.currentToken}
 
 	fnLit.Parameters = []*ast.Identifier{}
+
+	p.RemoveNewLines()
 
 	// Check {
 	if !p.ExpectPeek(token.LBRACE) {
@@ -606,6 +619,8 @@ func (p *Parser) ParseFunctionLiteral() ast.Expression {
 
 	fnLit.Parameters = p.ParseFunctionParameters()
 
+	p.RemoveNewLines()
+
 	// Check {
 	if !p.ExpectPeek(token.LBRACE) {
 		return nil
@@ -618,6 +633,7 @@ func (p *Parser) ParseFunctionLiteral() ast.Expression {
 func (p *Parser) ParseFunctionParameters() []*ast.Identifier {
 	var identifiers []*ast.Identifier
 
+	p.RemoveNewLines()
 	// If parameter list is empty
 	if p.PeekTokenIs(token.RPAREN) {
 		p.NextToken()
@@ -638,6 +654,7 @@ func (p *Parser) ParseFunctionParameters() []*ast.Identifier {
 	for p.PeekTokenIs(token.COMMA) {
 		// Advance to next Identifier
 		p.NextToken()
+		p.RemoveNewLines()
 		// Trailing Comma
 		if p.PeekTokenIs(token.RPAREN) {
 			break
@@ -649,6 +666,7 @@ func (p *Parser) ParseFunctionParameters() []*ast.Identifier {
 			Value: p.currentToken.Literal,
 		}
 		identifiers = append(identifiers, ident)
+		p.RemoveNewLines()
 	}
 
 	// Check )

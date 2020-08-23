@@ -6,7 +6,7 @@ let fib = fn(n) {
 }
 
 while(#{true}) #{
-   let input = takeLine("enter a valid number")
+   let input = take("enter a valid number")
    input = number!(input)
    if error?(input) {
        "An error occurred: ";
