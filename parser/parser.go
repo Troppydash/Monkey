@@ -9,7 +9,6 @@ import (
 	"strconv"
 )
 
-// TODO: Implement while and for loop
 // TODO: Implement Namespaces
 const float64EqualityThreshold = 1e-9
 
@@ -138,6 +137,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.LBRACKET, p.ParseArrayLiteral)
 
 	p.RegisterPrefix(token.LBRACE, p.ParseHashLiteral)
+	p.RegisterPrefix(token.NEWLINE, p.ParseNewLine)
 	//p.RegisterPrefix(token.ASSIGN, p.ParsePrefixExpression)
 
 	// Setup Infix Functions
@@ -182,6 +182,10 @@ func (p *Parser) NextToken() {
 	p.peekToken = p.lexer.NextToken()
 }
 
+func (p *Parser) IsPeekEndOfLine() bool {
+	return p.PeekTokenIs(token.NEWLINE) || p.PeekTokenIs(token.EOF)
+}
+
 // Parse the Whole Program and return an ast tree
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
@@ -191,12 +195,24 @@ func (p *Parser) ParseProgram() *ast.Program {
 	for p.currentToken.Type != token.EOF {
 		// Parse a statement
 		stmt := p.ParseStatement()
+		if !p.IsPeekEndOfLine() {
+			// TODO: Warnings
+			p.GenerateErrorForToken("Peek token is not a new line", &p.peekToken)
+		} else {
+			p.NextToken()
+		}
+
+		//if p.PeekTokenIs(token.NEWLINE) {
+		//	p.NextToken()
+		//	fmt.Println("Error")
+		//}
 		// Add it to the program.Statements if not nil
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
 		}
 		// Advance pointer
 		p.NextToken()
+
 	}
 
 	if p.HasError() {
@@ -241,11 +257,7 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 		Value: p.currentToken.Literal,
 	}
 
-	// TODO: Fix this problem
-	if !p.ExpectPeek(token.ASSIGN) {
-		if p.PeekTokenIs(token.SEMICOLON) {
-			p.NextToken()
-		}
+	if !p.PeekTokenIs(token.ASSIGN) {
 		stmt.Value = &ast.Null{
 			Token: p.currentToken,
 		}
@@ -253,12 +265,13 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 	}
 
 	p.NextToken()
+	p.NextToken()
 
 	stmt.Value = p.ParseExpression(LOWEST)
 
-	if p.PeekTokenIs(token.SEMICOLON) {
-		p.NextToken()
-	}
+	//if p.PeekTokenIs(token.SEMICOLON) {
+	//	p.NextToken()
+	//}
 
 	return stmt
 }
@@ -305,9 +318,9 @@ func (p *Parser) ParseReturnStatement() *ast.ReturnStatement {
 
 	stmt.ReturnValue = p.ParseExpression(LOWEST)
 
-	if p.PeekTokenIs(token.SEMICOLON) {
-		p.NextToken()
-	}
+	//if p.PeekTokenIs(token.SEMICOLON) {
+	//	p.NextToken()
+	//}
 
 	return stmt
 }
@@ -324,7 +337,6 @@ func (p *Parser) ParseExpressionStatement() interface {
 
 	// Advance through ; if exists
 	if p.PeekTokenIs(token.SEMICOLON) {
-
 		pStmt := &ast.PrintExpressionStatement{
 			Token:      stmt.Token,
 			Expression: exp,
@@ -347,7 +359,10 @@ func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	}
 	leftExpression := prefix()
 
-	for !p.PeekTokenIs(token.SEMICOLON) && precedence < p.PeekPrecedence() {
+	for {
+		if precedence >= p.PeekPrecedence() || p.IsPeekEndOfLine() {
+			break
+		}
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
 			return leftExpression
@@ -355,6 +370,14 @@ func (p *Parser) ParseExpression(precedence int) ast.Expression {
 		p.NextToken()
 		leftExpression = infix(leftExpression)
 	}
+	//for !p.IsPeekEndOfLine() && precedence < p.PeekPrecedence() {
+	//	infix := p.infixParseFns[p.peekToken.Type]
+	//	if infix == nil {
+	//		return leftExpression
+	//	}
+	//	p.NextToken()
+	//	leftExpression = infix(leftExpression)
+	//}
 	return leftExpression
 }
 
@@ -787,6 +810,12 @@ func (p *Parser) ParseBreak() ast.Expression {
 }
 
 func (p *Parser) ParseNull() ast.Expression {
+	return &ast.Null{
+		Token: p.currentToken,
+	}
+}
+
+func (p *Parser) ParseNewLine() ast.Expression {
 	return &ast.Null{
 		Token: p.currentToken,
 	}

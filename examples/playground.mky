@@ -1,16 +1,3 @@
-include("std")
-
-
-let terry = {
-    'name': 'terry',
-    'age': 16,
-    'hobby': 'video games'
-}
-
-terry;
-map(terry) fn(k, v) {
-    if k == 'name' {
-        return 'TERRY!'
-    }
-    "NO"
-};
+let i = [
+1, 2, 3 + 4]
+i;

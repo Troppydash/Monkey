@@ -75,6 +75,13 @@ func (r *Runner) ToAbsolute(location string) string {
 
 func (r *Runner) ParseProgram(content string, filename string) *ast.Program {
 	l := lexer.New(content, filename)
+
+	//for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken()  {
+	//	fmt.Println(tok.Type)
+	//	fmt.Println(tok.Literal)
+	//}
+	//os.Exit(1)
+
 	p := parser.New(l)
 	return p.ParseProgram()
 }

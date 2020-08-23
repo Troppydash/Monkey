@@ -113,7 +113,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
-		// TODO: Add chck error checks everywhere
 		if CheckError(right) {
 			return right
 		}
