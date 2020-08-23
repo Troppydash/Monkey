@@ -182,8 +182,18 @@ func (p *Parser) NextToken() {
 	p.peekToken = p.lexer.NextToken()
 }
 
+func (p *Parser) PeekPeekToken() token.Token {
+	return p.lexer.PeekToken()
+}
+
 func (p *Parser) IsPeekEndOfLine() bool {
 	return p.PeekTokenIs(token.NEWLINE) || p.PeekTokenIs(token.EOF)
+}
+
+func (p *Parser) RemoveNewLines() {
+	for p.PeekTokenIs(token.NEWLINE) {
+		p.NextToken()
+	}
 }
 
 // Parse the Whole Program and return an ast tree
@@ -503,6 +513,8 @@ func (p *Parser) ParseIfExpression() ast.Expression {
 
 	expression.Condition = p.ParseExpression(LOWEST)
 
+	p.RemoveNewLines()
+
 	//if !p.ExpectPeek(token.RPAREN) {
 	//	return nil
 	//}
@@ -514,13 +526,20 @@ func (p *Parser) ParseIfExpression() ast.Expression {
 	// Parse then case
 	expression.Consequence = p.ParseBlockStatement()
 
+	if p.PeekPeekToken().Type == token.ELSE {
+		p.RemoveNewLines()
+	}
+
 	// Parse else case
 	if p.PeekTokenIs(token.ELSE) {
 		p.NextToken()
+		p.RemoveNewLines()
 
 		if p.PeekTokenIs(token.IF) {
 			// Parse else if
 			p.NextToken()
+			p.RemoveNewLines()
+
 			block := &ast.BlockStatement{
 				Token: p.peekToken,
 				Statements: []ast.Statement{
@@ -716,9 +735,11 @@ func (p *Parser) ParseArrayLiteral() ast.Expression {
 func (p *Parser) ParseExpressionList(end token.TokenType) []ast.Expression {
 	var list []ast.Expression
 
-	if p.PeekTokenIs(token.COMMA) {
-		p.NextToken()
-	}
+	p.RemoveNewLines()
+
+	//if p.PeekTokenIs(token.COMMA) {
+	//	p.NextToken()
+	//}
 	if p.PeekTokenIs(end) {
 		p.NextToken()
 		return list
@@ -727,14 +748,19 @@ func (p *Parser) ParseExpressionList(end token.TokenType) []ast.Expression {
 	p.NextToken()
 	list = append(list, p.ParseExpression(LOWEST))
 
+	p.RemoveNewLines()
+
 	for p.PeekTokenIs(token.COMMA) {
 		p.NextToken()
+		p.RemoveNewLines()
 		if p.PeekTokenIs(end) {
 			break
 		}
 
 		p.NextToken()
 		list = append(list, p.ParseExpression(LOWEST))
+		p.RemoveNewLines()
+
 	}
 
 	if !p.ExpectPeek(end) {
@@ -779,6 +805,7 @@ func (p *Parser) ParseHashLiteral() ast.Expression {
 	hash.Pairs = make(map[ast.Expression]ast.Expression)
 
 	for !p.PeekTokenIs(token.RBRACE) {
+		p.RemoveNewLines()
 		p.NextToken()
 		key := p.ParseExpression(LOWEST)
 
@@ -791,9 +818,11 @@ func (p *Parser) ParseHashLiteral() ast.Expression {
 
 		hash.Pairs[key] = value
 
+		p.RemoveNewLines()
 		if !p.PeekTokenIs(token.RBRACE) && !p.ExpectPeek(token.COMMA) {
 			return nil
 		}
+		p.RemoveNewLines()
 	}
 
 	if !p.ExpectPeek(token.RBRACE) {

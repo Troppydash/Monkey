@@ -56,6 +56,21 @@ func (l *Lexer) ReadChar() {
 	l.readPosition += 1
 }
 
+func (l *Lexer) PeekToken() token.Token {
+	cachedL := &Lexer{
+		input:         l.input,
+		position:      l.position,
+		readPosition:  l.readPosition,
+		ch:            l.ch,
+		currentRow:    l.currentRow,
+		currentColumn: l.currentColumn,
+		currentFile:   l.currentFile,
+	}
+
+	tok := cachedL.NextToken()
+	return tok
+}
+
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
