@@ -212,7 +212,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 		if !p.IsPeekEndOfLine() {
 			if !p.CurrentTokenIs(token.NEWLINE) {
 				// TODO: Warnings
-				p.GenerateErrorForToken("Peek token is not a new line", &p.peekToken)
+				p.GenerateErrorForToken("No newline after parsing statement", &p.peekToken)
 			}
 		} else {
 			p.NextToken()
@@ -233,8 +233,9 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	if p.HasError() {
 		for _, err := range p.Errors() {
-			fmt.Printf("Parser Error: %s, at %d:%d, in file %s\n",
-				err.Message, err.RowNumber, err.ColumnNumber, err.Filename)
+			PrintParserError(err)
+			//fmt.Printf("Parser Error: %s, at %d:%d, in file %s\n",
+			//	err.Message, err.RowNumber, err.ColumnNumber, err.Filename)
 		}
 	}
 

@@ -1,6 +1,1 @@
-
-
-
-include("std")
-
-"Fini";
+let i = writeLine("Hello world");

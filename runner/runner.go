@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -56,14 +56,14 @@ func (r *Runner) ToAbsolute(location string) string {
 	var filename string
 	// if is a std include
 	if !strings.HasSuffix(location, ".mky") {
-		filename = path.Join(tmp.STDDirectory, path.Base(location), location+".mky")
-		tmp.SetAbsoluteDirectory(path.Dir(filename))
+		filename = filepath.Join(tmp.STDDirectory, filepath.Base(location), location+".mky")
+		tmp.SetAbsoluteDirectory(filepath.Dir(filename))
 	} else {
 		re := regexp.MustCompile("[/\\\\]")
 		folders := re.Split(location, -1)
 		dirs := append([]string{tmp.CurrentProcessingFileDirectory}, folders...)
-		filename = path.Join(dirs...)
-		tmp.SetAbsoluteDirectory(path.Dir(filename))
+		filename = filepath.Join(dirs...)
+		tmp.SetAbsoluteDirectory(filepath.Dir(filename))
 	}
 
 	return filename
