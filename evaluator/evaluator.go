@@ -15,7 +15,6 @@ var (
 	NULL  = &object.Null{}
 )
 
-// TODO: Convert fatal error to this
 func NewFatalError(data *token.TokenData, format string, a ...interface{}) *object.Error {
 	options.FatalErrors = true
 	return &object.Error{
@@ -143,7 +142,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 
-		// TODO: Fix this
 		env.Store(node.Name.Value, val)
 
 	case *ast.AssignmentExpression:

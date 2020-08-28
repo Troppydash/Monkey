@@ -3,17 +3,15 @@ package runner
 import (
 	"Monkey/ast"
 	"Monkey/lexer"
+	"Monkey/options"
 	"Monkey/parser"
 	"Monkey/tmp"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 )
-
-// TODO: Stop importing twice
 
 // Singleton
 var runner = &Runner{}
@@ -29,6 +27,20 @@ func GetInstance() *Runner {
 func (r *Runner) CompileAbs(filename string) (*ast.Program, error) {
 	content, err := r.ReadFile(filename)
 	if err != nil {
+		// graceful return
+		if ce, ok := err.(CError); ok {
+			if options.Debug {
+				fmt.Println("Circular Dependency Warning")
+				for _, file := range ce.files {
+					fmt.Printf("  %s\n", file)
+				}
+				//fmt.Printf("  %s\n", filename)
+			}
+			return &ast.Program{
+				Statements: []ast.Statement{},
+			}, nil
+		}
+
 		return nil, err
 	}
 	return r.ParseProgram(string(content), filename), nil
@@ -86,17 +98,27 @@ func (r *Runner) ParseProgram(content string, filename string) *ast.Program {
 	return p.ParseProgram()
 }
 
+type CError struct {
+	files []string
+}
+
+func NewCError(files []string) CError {
+	return CError{
+		files,
+	}
+}
+
+func (c CError) Error() string {
+	return "Circular Dependency Error"
+}
+
 func (r *Runner) ReadFile(filename string) ([]byte, error) {
 	for _, file := range r.files {
 		if file == filename {
-			fmt.Println("Circular Dependency Error")
-			for _, file := range r.files {
-				fmt.Printf("  %s\n", file)
-			}
-			fmt.Printf("  %s\n", filename)
-			os.Exit(1)
+			return nil, NewCError(append(r.files, filename))
 		}
 	}
+
 	r.files = append(r.files, filename)
 
 	content, err := ioutil.ReadFile(filename)

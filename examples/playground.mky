@@ -1,1 +1,5 @@
-let i = writeLine("Hello world");
+include("temp.mky")
+
+let name = "Terry"
+
+hi()

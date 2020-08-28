@@ -6,15 +6,16 @@ import (
 	"path"
 )
 
-// TODO Fix
-var Filename string
-
+// the dir of te file that it is processing
 var CurrentProcessingFileDirectory string
 
 // Command Directory
 var CurrentDirectory string
+
+// root path
 var ExeDirectory string
 
+// lib directory
 var STDDirectory string
 
 func SetAbsoluteDirectory(absolute string) {
