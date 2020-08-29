@@ -1,7 +1,7 @@
 package options
 
 var (
-	NicerToString = false
+	NicerToString = true
 	FatalErrors   = false
 	Debug         = false
 )

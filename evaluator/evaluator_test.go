@@ -524,11 +524,19 @@ func TestEvalIntegerExpression(t *testing.T) {
 
 // Eval an input
 func CheckEval(input string) object.Object {
+	options.NicerToString = false
 	l := lexer.New(input, "testEval")
 	p := parser.New(l)
 	program := p.ParseProgram()
 	env := object.NewEnvironment()
-
+	return Eval(program, env)
+}
+func CheckEvalNice(input string) object.Object {
+	options.NicerToString = true
+	l := lexer.New(input, "testEval")
+	p := parser.New(l)
+	program := p.ParseProgram()
+	env := object.NewEnvironment()
 	return Eval(program, env)
 }
 

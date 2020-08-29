@@ -1,5 +1,12 @@
-include("temp.mky")
+//include("temp.mky")
 
-let name = "Terry"
+//let name = "Terry"
 
-hi()
+//hi()
+
+let i = 'hello world'
+
+i;
+i[:];
+
+i;

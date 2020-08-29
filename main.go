@@ -20,21 +20,13 @@ func main() {
 		// Create env
 		env := object.NewEnvironment()
 
-		// Link std
-		//LinkFile("std", env)
 		// Compile
 		err := evaluator.LinkAndEval(filename, env)
 
-		//old := tmp.CurrentProcessingFileDirectory
-		//abs := runner.GetInstance().ToAbsolute(filename)
-		//p, e := runner.GetInstance().CompileAbs(abs)
 		if err != nil {
 			fmt.Printf("Failed to compile file %q\n", filename)
 			return
 		}
-		//evaluator.Eval(p, env)
-		//runner.GetInstance().Pop(abs)
-		//tmp.CurrentProcessingFileDirectory = old
 		return
 	}
 

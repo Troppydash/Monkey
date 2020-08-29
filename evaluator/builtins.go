@@ -210,7 +210,7 @@ func init() {
 					return WrongArgumentsAmount("push", len(args), "2", token)
 				}
 
-				if args[0].Type() != object.ARRAY_OBJ {
+				if args[0].Type() != object.ArrayObj {
 					return ArgumentNotSupported("push", args[0].Type(), token)
 				}
 
@@ -230,7 +230,7 @@ func init() {
 					return WrongArgumentsAmount("add", len(args), "2", token)
 				}
 
-				if args[0].Type() != object.ARRAY_OBJ {
+				if args[0].Type() != object.ArrayObj {
 					return ArgumentNotSupported("add", args[0].Type(), token)
 				}
 
@@ -248,7 +248,7 @@ func init() {
 					return WrongArgumentsAmount("loop", len(args), "1-2", token)
 				}
 
-				if args[0].Type() != object.FUNCTION_OBJ {
+				if args[0].Type() != object.FunctionObj {
 					return ArgumentNotSupported("loop", args[0].Type(), token)
 				}
 
@@ -298,10 +298,10 @@ func init() {
 					return WrongArgumentsAmount("while", len(args), "2", token)
 				}
 
-				if args[0].Type() != object.FUNCTION_OBJ {
+				if args[0].Type() != object.FunctionObj {
 					return ArgumentNotSupported("while", args[0].Type(), token)
 				}
-				if args[1].Type() != object.FUNCTION_OBJ {
+				if args[1].Type() != object.FunctionObj {
 					return ArgumentNotSupported("while", args[1].Type(), token)
 				}
 
@@ -448,7 +448,7 @@ func init() {
 					return FALSE
 				}
 
-				return NativeBoolToBooleanObject(args[0].Type() == object.NULL_OBJ)
+				return NativeBoolToBooleanObject(args[0].Type() == object.NullObj)
 			},
 		},
 

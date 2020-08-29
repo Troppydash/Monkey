@@ -11,17 +11,18 @@ import (
 
 // Object Types
 const (
-	INTEGER_OBJ      = "INTEGER"      // Int
-	BOOLEAN_OBJ      = "BOOLEAN"      // Bool
-	NULL_OBJ         = "NULL"         // Disgusting
-	BREAK_OBJ        = "BREAK"        // break
-	RETURN_VALUE_OBJ = "RETURN_VALUE" // return
-	ERROR_OBJ        = "ERROR"        // error
-	FUNCTION_OBJ     = "FUNCTION"     // fn
-	STRING_OBJ       = "STRING"       // ""
-	BUILTIN_OBJ      = "BUILTIN"      // Builtin Functions
-	ARRAY_OBJ        = "ARRAY"        // Arrays
-	HASH_OBJ         = "HASH"         // Hashmaps
+	IntegerObj     = "INTEGER"      // Int
+	BooleanObj     = "BOOLEAN"      // Bool
+	NullObj        = "NULL"         // Disgusting
+	BreakObj       = "BREAK"        // break
+	ReturnValueObj = "RETURN_VALUE" // return
+	ErrorObj       = "ERROR"        // error
+	FunctionObj    = "FUNCTION"     // fn
+	StringObj      = "STRING"       // ""
+	BuiltinObj     = "BUILTIN"      // Builtin Functions
+	ArrayObj       = "ARRAY"        // Arrays
+	HashObj        = "HASH"         // Hashmaps
+	QuoteObj       = "QUOTE"
 )
 
 // The type of the object
@@ -45,7 +46,7 @@ func (i *Integer) GetValue() interface{} {
 	return i.Value
 }
 func (i *Integer) Type() ObjectType {
-	return INTEGER_OBJ
+	return IntegerObj
 }
 func (i *Integer) Inspect() string {
 	return strconv.FormatFloat(i.Value, 'f', -1, 64)
@@ -54,7 +55,7 @@ func (i *Integer) Inspect() string {
 type Break struct{}
 
 func (b *Break) Type() ObjectType {
-	return BREAK_OBJ
+	return BreakObj
 }
 
 func (b *Break) Inspect() string {
@@ -69,7 +70,7 @@ type Boolean struct {
 }
 
 func (b *Boolean) Type() ObjectType {
-	return BOOLEAN_OBJ
+	return BooleanObj
 }
 func (b *Boolean) Inspect() string {
 	return fmt.Sprintf("%t", b.Value)
@@ -79,7 +80,7 @@ func (b *Boolean) Inspect() string {
 type Null struct{}
 
 func (n *Null) Type() ObjectType {
-	return NULL_OBJ
+	return NullObj
 }
 func (n *Null) Inspect() string {
 	return "null"
@@ -90,7 +91,7 @@ type ReturnValue struct {
 }
 
 func (rv *ReturnValue) Type() ObjectType {
-	return RETURN_VALUE_OBJ
+	return ReturnValueObj
 }
 func (rv *ReturnValue) Inspect() string {
 	return rv.Value.Inspect()
@@ -103,7 +104,7 @@ type Error struct {
 }
 
 func (e *Error) Type() ObjectType {
-	return ERROR_OBJ
+	return ErrorObj
 }
 func (e *Error) Inspect() string {
 	return fmt.Sprintf("Runtime Error: %s, at %d:%d, in file %s\n",
@@ -117,7 +118,7 @@ type Function struct {
 }
 
 func (f *Function) Type() ObjectType {
-	return FUNCTION_OBJ
+	return FunctionObj
 }
 func (f *Function) Inspect() string {
 	var out strings.Builder
@@ -145,7 +146,7 @@ type String struct {
 }
 
 func (s *String) Type() ObjectType {
-	return STRING_OBJ
+	return StringObj
 }
 func (s *String) Inspect() string {
 	return s.Value
@@ -160,7 +161,7 @@ type Builtin struct {
 }
 
 func (b *Builtin) Type() ObjectType {
-	return BUILTIN_OBJ
+	return BuiltinObj
 }
 func (b *Builtin) Inspect() string {
 	return "builtin function"
@@ -172,7 +173,7 @@ type Array struct {
 }
 
 func (ao *Array) Type() ObjectType {
-	return ARRAY_OBJ
+	return ArrayObj
 }
 func (ao *Array) Inspect() string {
 	var out strings.Builder
@@ -257,7 +258,7 @@ type Hash struct {
 }
 
 func (h *Hash) Type() ObjectType {
-	return HASH_OBJ
+	return HashObj
 }
 func (h *Hash) Inspect() string {
 	var out strings.Builder
@@ -273,4 +274,16 @@ func (h *Hash) Inspect() string {
 	out.WriteString("}")
 
 	return out.String()
+}
+
+// Quote holds the root of an ast node
+type Quote struct {
+	Node ast.Node
+}
+
+func (q *Quote) Type() ObjectType {
+	return QuoteObj
+}
+func (q *Quote) Inspect() string {
+	return "QUOTE(" + q.Node.ToString() + ")"
 }

@@ -39,7 +39,7 @@ func CheckError(obj object.Object) bool {
 	if !options.FatalErrors {
 		return false
 	}
-	return obj.Type() == object.ERROR_OBJ
+	return obj.Type() == object.ErrorObj
 }
 
 // Modified here
@@ -48,7 +48,7 @@ func LogError(obj object.Object) bool {
 	if obj == nil {
 		return false
 	}
-	isError := obj.Type() == object.ERROR_OBJ
+	isError := obj.Type() == object.ErrorObj
 
 	if isError {
 		// If Fatal errors is set, we stop the exec
@@ -69,7 +69,7 @@ func IsTruthful(obj object.Object) bool {
 	switch {
 	case obj == FALSE, obj == NULL:
 		return false
-	case obj.Type() == object.INTEGER_OBJ:
+	case obj.Type() == object.IntegerObj:
 		integer := obj.(*object.Integer)
 		return integer.Value != 0
 	default:
@@ -166,6 +166,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Function{Parameters: params, Env: env, Body: body}
 
 	case *ast.CallExpression:
+		// short circuit
+		if node.Function.TokenLiteral() == "quote" {
+			return EvalQuote(node.Token, node.Arguments)
+		}
+
 		function := Eval(node.Function, env)
 		if CheckError(function) {
 			return function
@@ -224,6 +229,18 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	return NULL
 }
 
+func EvalQuote(token token.Token, arguments []ast.Expression) object.Object {
+	if len(arguments) != 1 {
+		return NewFatalError(token.ToTokenData(), "quote only takes one argument. got=%d", len(arguments))
+	}
+
+	argument := arguments[0]
+
+	return &object.Quote{
+		Node: argument,
+	}
+}
+
 // Evaluate hash maps
 func EvalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {
 	pairs := make(map[object.HashKey]object.HashPair)
@@ -257,10 +274,84 @@ func EvalIndexExpression(exp object.Object, start object.Object, end object.Obje
 	switch exp.(type) {
 	case *object.Array:
 		return EvalArrayIndexExpression(exp, start, end, token, hasRange)
+	case *object.String:
+		return EvalStringIndexExpression(exp, start, end, token, hasRange)
 	case *object.Hash:
 		return EvalHashIndexExpression(exp, start, token)
 	default:
-		return NewFatalError(token.ToTokenData(), "index operator not support for `%s`", exp.Type())
+		return NewFatalError(token.ToTokenData(), "index operator not supported for `%s`", exp.Type())
+	}
+}
+
+func EvalStringIndexExpression(exp object.Object, start object.Object, end object.Object, token token.Token, hasRange bool) object.Object {
+	stringObj := exp.(*object.String)
+	length := int64(len(stringObj.Value))
+
+	// Four Options
+	switch {
+	case !hasRange:
+		s := int64(start.(*object.Integer).Value)
+		if s < 0 {
+			s = length + s
+		}
+		if !IsIndexInRange(s, length) {
+			return NewFatalError(token.ToTokenData(), "index out of range. got=%d, expected=%d-%d",
+				s, 0, length-1)
+		}
+		return &object.String{
+			Value: string(stringObj.Value[s]),
+		}
+
+	case hasRange:
+		{
+			var startIndex int64
+			var endIndex int64
+
+			switch {
+			case start.Type() == object.IntegerObj && end.Type() == object.NullObj:
+				startIndex = int64(start.(*object.Integer).Value)
+				endIndex = length
+			case start.Type() == object.NullObj && end.Type() == object.IntegerObj:
+				startIndex = 0
+				endIndex = int64(end.(*object.Integer).Value)
+			case start.Type() == object.IntegerObj && end.Type() == object.IntegerObj:
+				startIndex = int64(start.(*object.Integer).Value)
+				endIndex = int64(end.(*object.Integer).Value)
+			default:
+				// Full Range
+				return &object.String{
+					Value: stringObj.Value,
+				}
+			}
+
+			if startIndex < 0 {
+				startIndex = length + startIndex
+			}
+			if endIndex < 0 {
+				endIndex = length + endIndex
+			}
+
+			if !IsIndexInRange(startIndex, length+1) {
+				return NewFatalError(token.ToTokenData(), "startIndex out of range. got=%d, expected=%d-%d",
+					startIndex, 0, length-1)
+			}
+			if !IsIndexInRange(endIndex, length+1) {
+				return NewFatalError(token.ToTokenData(), "endIndex out of range. got=%d, expected=%d-%d",
+					endIndex, 0, length-1)
+			}
+
+			if startIndex > endIndex {
+				return NewFatalError(token.ToTokenData(), "startIndex larger than endIndex. startIndex=%d, endIndex=%d",
+					startIndex, endIndex)
+			}
+
+			return &object.String{
+				Value: stringObj.Value[startIndex:endIndex],
+			}
+		}
+
+	default:
+		return NewFatalError(token.ToTokenData(), "parser probably failed, this should never happen")
 	}
 }
 
@@ -308,13 +399,13 @@ func EvalArrayIndexExpression(array object.Object, start object.Object, end obje
 			var endIndex int64
 
 			switch {
-			case start.Type() == object.INTEGER_OBJ && end.Type() == object.NULL_OBJ:
+			case start.Type() == object.IntegerObj && end.Type() == object.NullObj:
 				startIndex = int64(start.(*object.Integer).Value)
 				endIndex = length
-			case start.Type() == object.NULL_OBJ && end.Type() == object.INTEGER_OBJ:
+			case start.Type() == object.NullObj && end.Type() == object.IntegerObj:
 				startIndex = 0
 				endIndex = int64(end.(*object.Integer).Value)
-			case start.Type() == object.INTEGER_OBJ && end.Type() == object.INTEGER_OBJ:
+			case start.Type() == object.IntegerObj && end.Type() == object.IntegerObj:
 				startIndex = int64(start.(*object.Integer).Value)
 				endIndex = int64(end.(*object.Integer).Value)
 			default:
@@ -362,6 +453,7 @@ func ApplyFunction(token token.Token, function object.Object, args []object.Obje
 		return UnwrapReturnValue(evaluated)
 
 	case *object.Builtin:
+		// TODO: Forward declare
 		return fn.Fn(token, environment, args...)
 
 	default:
@@ -428,7 +520,7 @@ func EvalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 
 		if result != nil {
 			rt := result.Type()
-			if rt == object.RETURN_VALUE_OBJ || CheckError(result) {
+			if rt == object.ReturnValueObj || CheckError(result) {
 				return result
 			}
 		}
@@ -712,7 +804,7 @@ func EvalPrefixExpression(operator string, right object.Object, token token.Toke
 
 // Eval + infix operator
 func EvalPlusPrefixOperatorExpression(right object.Object, token token.Token) object.Object {
-	if right.Type() != object.INTEGER_OBJ {
+	if right.Type() != object.IntegerObj {
 		return NewFatalError(token.ToTokenData(), "unknown operation: +%s", right.Type())
 	}
 
@@ -722,7 +814,7 @@ func EvalPlusPrefixOperatorExpression(right object.Object, token token.Token) ob
 // Eval - infix operator
 func EvalMinusPrefixOperatorExpression(right object.Object, token token.Token) object.Object {
 	// Not Integer
-	if right.Type() != object.INTEGER_OBJ {
+	if right.Type() != object.IntegerObj {
 		return NewFatalError(token.ToTokenData(), "unknown operation: -%s", right.Type())
 	}
 
