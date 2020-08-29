@@ -603,19 +603,36 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 		return right
 	}
 
-	// TODO maybe later
-	//if operator == token.ASSIGN {
-	//	if lft, ok := node.Left.(*ast.IndexExpression); ok {
-	//		for {
-	//			if l, ok := lft.Left.(*ast.IndexExpression); ok {
-	//				lft = l
-	//			} else {
-	//				break
-	//			}
-	//		}
-	//		fmt.Println(lft)
-	//	}
-	//}
+	// TODO, fix this monkey patching shit
+	if operator == token.ASSIGN {
+		if lft, ok := node.Left.(*ast.IndexExpression); ok {
+			value := Eval(lft.Left, env)
+			index := Eval(lft.Start, env)
+			switch value.(type) {
+			case *object.Hash:
+				value, _ := value.(*object.Hash)
+
+				hashKey, ok := index.(object.Hashable)
+				if !ok {
+					return NewFatalError(node.Token.ToTokenData(), "unusable as hash key: %s", index.Type())
+				}
+
+				value.Pairs[hashKey.HashKey()] = object.HashPair{Key: index, Value: right}
+
+				return right
+			case *object.Array:
+				arr, _ := value.(*object.Array)
+
+				index, ok := index.(*object.Integer)
+				if !ok {
+					return NewFatalError(node.Token.ToTokenData(), "unusable index key: %s", index.Type())
+				}
+				arr.Elements[int(index.Value)] = right
+
+				return right
+			}
+		}
+	}
 	// Try ident
 	//switch operator {
 	//case token.ASSIGN:

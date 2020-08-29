@@ -142,7 +142,7 @@ func New(l *lexer.Lexer) *Parser {
 
 	// Setup Infix Functions
 	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
-	//p.RegisterInfix(token.ASSIGN, p.ParseInfixExpression)
+	p.RegisterInfix(token.ASSIGN, p.ParseInfixExpression)
 	p.RegisterInfix(token.PLUS, p.ParseInfixExpression)
 	p.RegisterInfix(token.MINUS, p.ParseInfixExpression)
 	p.RegisterInfix(token.SLASH, p.ParseInfixExpression)
@@ -430,6 +430,7 @@ func (p *Parser) ParseIdentifier() ast.Expression {
 		Token: p.currentToken,
 		Value: p.currentToken.Literal,
 	}
+
 	if p.PeekTokenIs(token.ASSIGN) {
 		p.NextToken()
 		p.NextToken()

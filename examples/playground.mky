@@ -1,12 +1,9 @@
-//include("temp.mky")
+let h = {
+    'one': {
+        'name': range(12)
+    }
+}
 
-//let name = "Terry"
-
-//hi()
-
-let i = 'hello world'
-
-i;
-i[:];
-
-i;
+h;
+h['one']['name'][50] = 99
+h;
