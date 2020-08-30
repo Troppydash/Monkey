@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const LinesAround = 3
+const LinesAround = 4
 
 func PrintParserError(err *ParseError) {
 	fmt.Printf("Parser Error: %s, at %d:%d, in file %s\n",

@@ -11,7 +11,6 @@ func LinkAndEval(filename string, env *object.Environment) error {
 	abs := runner.GetInstance().ToAbsolute(filename)
 	p, e := runner.GetInstance().CompileAbs(abs)
 	if e != nil {
-		//fmt.Printf("Failed to compile file %q\n", filename)
 		return e
 	}
 	Eval(p, env)

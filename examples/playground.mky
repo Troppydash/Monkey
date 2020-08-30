@@ -3,7 +3,7 @@ let h = {
         'name': range(12)
     }
 }
-
+//
 h;
-h['one']['name'][50] = 99
+h['one']['name'][] = 99
 h;

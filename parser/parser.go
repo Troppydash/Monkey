@@ -178,6 +178,7 @@ func (p *Parser) RegisterInfix(tokenType token.TokenType, fn InfixParseFn) {
 
 // Advance the pointer by reading the next token from the lexer
 func (p *Parser) NextToken() {
+	// TODO: Goroutine
 	p.currentToken = p.peekToken
 	p.peekToken = p.lexer.NextToken()
 }
@@ -210,7 +211,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 		// Parse a statement
 		stmt := p.ParseStatement()
 		if !p.IsPeekEndOfLine() {
-			if !p.CurrentTokenIs(token.NEWLINE) {
+			if !p.CurrentTokenIs(token.NEWLINE) && !p.HasError() {
 				// TODO: Warnings
 				p.GenerateErrorForToken("No newline after parsing statement", &p.peekToken)
 			}

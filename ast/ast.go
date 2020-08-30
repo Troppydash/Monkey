@@ -111,6 +111,7 @@ func (rs *ReturnStatement) ToString() string {
 	return out.String()
 }
 
+// TODO: Remove this in place of infix
 type AssignmentExpression struct {
 	Token token.Token
 	Ident *Identifier

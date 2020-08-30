@@ -168,7 +168,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.CallExpression:
 		// short circuit
 		if node.Function.TokenLiteral() == "quote" {
-			return EvalQuote(node.Token, node.Arguments)
+			return EvalQuote(node.Token, node.Arguments, env)
 		}
 
 		function := Eval(node.Function, env)
@@ -227,18 +227,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	}
 
 	return NULL
-}
-
-func EvalQuote(token token.Token, arguments []ast.Expression) object.Object {
-	if len(arguments) != 1 {
-		return NewFatalError(token.ToTokenData(), "quote only takes one argument. got=%d", len(arguments))
-	}
-
-	argument := arguments[0]
-
-	return &object.Quote{
-		Node: argument,
-	}
 }
 
 // Evaluate hash maps
@@ -604,6 +592,7 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 	}
 
 	// TODO, fix this monkey patching shit
+	// Make assign parse from right to left too
 	if operator == token.ASSIGN {
 		if lft, ok := node.Left.(*ast.IndexExpression); ok {
 			value := Eval(lft.Left, env)

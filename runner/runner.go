@@ -25,6 +25,8 @@ func GetInstance() *Runner {
 }
 
 func (r *Runner) CompileAbs(filename string) (*ast.Program, error) {
+	// TODO cache this
+
 	content, err := r.ReadFile(filename)
 	if err != nil {
 		// graceful return
@@ -34,7 +36,6 @@ func (r *Runner) CompileAbs(filename string) (*ast.Program, error) {
 				for _, file := range ce.files {
 					fmt.Printf("  %s\n", file)
 				}
-				//fmt.Printf("  %s\n", filename)
 			}
 			return &ast.Program{
 				Statements: []ast.Statement{},
@@ -81,19 +82,8 @@ func (r *Runner) ToAbsolute(location string) string {
 	return filename
 }
 
-//func (r *Runner) Compile(location string) (*ast.Program, error) {
-//	return r.CompileAbs(path.Base(filename))
-//}
-
 func (r *Runner) ParseProgram(content string, filename string) *ast.Program {
 	l := lexer.New(content, filename)
-
-	//for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken()  {
-	//	fmt.Println(tok.Type)
-	//	fmt.Println(tok.Literal)
-	//}
-	//os.Exit(1)
-
 	p := parser.New(l)
 	return p.ParseProgram()
 }

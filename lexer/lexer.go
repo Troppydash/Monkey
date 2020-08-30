@@ -71,6 +71,7 @@ func (l *Lexer) PeekToken() token.Token {
 	return tok
 }
 
+// TODO: Goroutine
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
