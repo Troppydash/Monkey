@@ -7,6 +7,16 @@ import (
 	"Monkey/token"
 )
 
+func EvalUnquote(token token.Token, arguments []ast.Expression, environment *object.Environment) object.Object {
+	if len(arguments) < 1 {
+		return NewFatalError(token.ToTokenData(), "unquote only takes one argument. got=%d", len(arguments))
+	}
+
+	argument := Eval(arguments[0], environment)
+
+	return argument
+}
+
 func EvalQuote(token token.Token, arguments []ast.Expression, environment *object.Environment) object.Object {
 	if len(arguments) != 1 {
 		return NewFatalError(token.ToTokenData(), "quote only takes one argument. got=%d", len(arguments))

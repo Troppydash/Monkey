@@ -170,6 +170,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if node.Function.TokenLiteral() == "quote" {
 			return EvalQuote(node.Token, node.Arguments, env)
 		}
+		if node.Function.TokenLiteral() == "unquote" {
+			return EvalUnquote(node.Token, node.Arguments, env)
+		}
 
 		function := Eval(node.Function, env)
 		if CheckError(function) {
