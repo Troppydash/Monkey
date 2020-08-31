@@ -19,7 +19,7 @@ let map = fn (list, func) {
         let newList = []
         forEach(list) fn(e) {
             let result = func(e)
-            add(newList, result)
+            append(newList, result)
         }
         return newList
     } else if typeof(list) == HASH {

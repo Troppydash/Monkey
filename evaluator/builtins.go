@@ -226,10 +226,10 @@ func init() {
 				return &object.Array{Elements: newElements}
 			},
 		},
-		"add": {
+		"append": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 2 {
-					return WrongArgumentsAmount("add", len(args), "2", token)
+					return WrongArgumentsAmount("append", len(args), "2", token)
 				}
 
 				if args[0].Type() != object.ArrayObj {

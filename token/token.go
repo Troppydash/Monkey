@@ -75,6 +75,17 @@ type Token struct {
 	Filename     string
 }
 
+// NewToken creates a new token
+func NewToken(typ TokenType, lit string, td *TokenData) Token {
+	return Token{
+		Type:         typ,
+		Literal:      lit,
+		RowNumber:    td.RowNumber,
+		ColumnNumber: td.ColumnNumber,
+		Filename:     td.Filename,
+	}
+}
+
 // Error reporting data
 type TokenData struct {
 	Filename     string

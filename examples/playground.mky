@@ -1,2 +1,3 @@
 // TODO: Add parameter check
-forEach;
+let add = fn(x, y) { x + y }
+add(5, 5)

@@ -14,7 +14,7 @@ let range = fn(start, end, step) {}
 
 let push = fn(arr, elem) {}
 
-let add = fn(arr, elem) {}
+let append = fn(arr, elem) {}
 
 let loop = fn(func, amount) {}
 

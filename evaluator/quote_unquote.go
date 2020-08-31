@@ -41,15 +41,29 @@ func evalUnquoteCalls(quoted ast.Node, environment *object.Environment) ast.Node
 func convertObjectToASTNode(unquoted object.Object, t token.Token) ast.Node {
 	switch obj := unquoted.(type) {
 	case *object.Integer:
-		t := token.Token{
-			Type:         token.INT,
-			Literal:      parser.FormatFloat(obj.Value),
-			RowNumber:    t.RowNumber,
-			ColumnNumber: t.ColumnNumber,
-			Filename:     t.Filename,
+		tmpt := token.NewToken(
+			token.INT,
+			parser.FormatFloat(obj.Value),
+			t.ToTokenData(),
+		)
+		//t := token.Token{
+		//	Type:         token.INT,
+		//	Literal:      parser.FormatFloat(obj.Value),
+		//	RowNumber:    t.RowNumber,
+		//	ColumnNumber: t.ColumnNumber,
+		//	Filename:     t.Filename,
+		//}
+		return &ast.IntegerLiteral{Token: tmpt, Value: obj.Value}
+	case *object.Boolean:
+		var tmpt token.Token
+		if obj.Value {
+			tmpt = token.NewToken(token.TRUE, "true", t.ToTokenData())
+		} else {
+			tmpt = token.NewToken(token.FALSE, "false", t.ToTokenData())
 		}
-		return &ast.IntegerLiteral{Token: t, Value: obj.Value}
-
+		return &ast.Boolean{Token: tmpt, Value: obj.Value}
+	case *object.Quote:
+		return obj.Node
 	default:
 		return &ast.Null{Token: t}
 	}

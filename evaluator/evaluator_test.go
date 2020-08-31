@@ -306,11 +306,11 @@ func TestFunctionCalls(t *testing.T) {
 		input    string
 		expected float64
 	}{
-		{"let identity = fn(x) { x } identity(5)", 5},
-		{"let identity = fn(x) { return x } identity(5)", 5},
-		{"let double = fn(x) { x * 2 } double(5)", 10},
-		{"let add = fn(x, y) { x + y } add(5, 5)", 10},
-		{"let add = fn(x, y) { x + y } add(5 + 5, add(5, 5))", 20},
+		{"let identity = fn(x) { x } \nidentity(5)", 5},
+		{"let identity = fn(x) { return x } \nidentity(5)", 5},
+		{"let double = fn(x) { x * 2 } \ndouble(5)", 10},
+		{"let add = fn(x, y) { x + y } \nadd(5, 5)", 10},
+		{"let add = fn(x, y) { x + y } \nadd(5 + 5, add(5, 5))", 20},
 		{"fn(x) { x }(5)", 5},
 	}
 
@@ -533,7 +533,7 @@ func CheckEval(input string) object.Object {
 }
 func CheckEvalNice(input string) object.Object {
 	options.NicerToString = true
-	l := lexer.New(input, "testEval")
+	l := lexer.New(input, "testEvalNice")
 	p := parser.New(l)
 	program := p.ParseProgram()
 	env := object.NewEnvironment()

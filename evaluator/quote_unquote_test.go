@@ -32,7 +32,16 @@ func TestQuote(t *testing.T) {
 		},
 		{
 			`quote(unquote(true == false))`,
-			`true`,
+			`false`,
+		},
+		{
+			`quote(unquote(quote(4 + 4)))`,
+			`(4 + 4)`,
+		},
+		{
+			`let quotedInfi = quote(4 + 4)
+			quote(unquote(4 + 4) + unquote(quotedInfi))`,
+			`(8 + (4 + 4))`,
 		},
 	}
 
