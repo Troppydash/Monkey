@@ -20,8 +20,15 @@ func main() {
 		// Create env
 		env := object.NewEnvironment()
 
+		// Link std
+		err := evaluator.LinkAndEval("std", env)
+		if err != nil {
+			fmt.Printf("Failed to compile file %q\n", filename)
+			return
+		}
+
 		// Compile
-		err := evaluator.LinkAndEval(filename, env)
+		err = evaluator.LinkAndEval(filename, env)
 
 		if err != nil {
 			fmt.Printf("Failed to compile file %q\n", filename)

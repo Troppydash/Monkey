@@ -1,0 +1,44 @@
+let typeof = fn(obj) {}
+
+let quote = fn(ele) {}
+
+let unquote = fn(ele) {}
+
+let include = fn(filename) {}
+
+let len = fn(ele) {}
+
+let keys = fn(ele) {}
+
+let range = fn(start, end, step) {}
+
+let push = fn(arr, elem) {}
+
+let add = fn(arr, elem) {}
+
+let loop = fn(func, amount) {}
+
+let while = fn(func, pred) {}
+
+let set = fn(ele, index, newValue) {}
+
+let format = fn() {}
+
+let write = fn(any) {}
+
+let writeLine = fn(any) {}
+
+let take = fn(prompt) {}
+
+let takeLine = fn(prompt) {}
+
+let error? = fn(ele) {}
+
+let null? = fn(ele) {}
+
+let bool! = fn(ele) {}
+
+let string! = fn(ele) {}
+
+let number! = fn(ele) {}
+

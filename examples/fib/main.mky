@@ -10,7 +10,7 @@ while(#{true}) #{
    input = number!(input)
    if error?(input) {
        "An error occurred: ";
-       string(input);
+       string!(input);
    } else {
        fib(input);
    }

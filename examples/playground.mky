@@ -1,9 +1,2 @@
-let h = {
-    'one': {
-        'name': range(12)
-    }
-}
-//
-h;
-h['one']['name'][] = 99
-h;
+// TODO: Add parameter check
+forEach;

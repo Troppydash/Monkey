@@ -49,6 +49,7 @@ func convertObjectToASTNode(unquoted object.Object, t token.Token) ast.Node {
 			Filename:     t.Filename,
 		}
 		return &ast.IntegerLiteral{Token: t, Value: obj.Value}
+
 	default:
 		return &ast.Null{Token: t}
 	}

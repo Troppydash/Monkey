@@ -488,12 +488,13 @@ func EvalExpressions(arguments []ast.Expression, env *object.Environment) []obje
 
 // Fetch the value from env and return it
 func EvalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
-	if val, ok := env.Get(node.Value); ok {
-		return val
-	}
-
 	if builtin, ok := builtins[node.Value]; ok {
 		return builtin
+	}
+
+	if val, ok := env.Get(node.Value); ok {
+
+		return val
 	}
 
 	return NewFatalError(node.Token.ToTokenData(), "identifier not found: %s", node.Value)

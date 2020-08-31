@@ -30,13 +30,14 @@ func ProhibitedValue(method string, value interface{}, reason interface{}, token
 
 var builtins map[string]*object.Builtin
 
+// TODO: Minimin argument field in struct
 func init() {
 	builtins = map[string]*object.Builtin{
 		// TODO: Math Functions
 
 		"typeof": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-				if len(args) != 1 {
+				if len(args) < 1 {
 					return WrongArgumentsAmount("typeof", len(args), "1", token)
 				}
 
@@ -75,6 +76,7 @@ func init() {
 				return NULL
 			},
 		},
+
 		// Array
 		"len": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -244,7 +246,7 @@ func init() {
 
 		"loop": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-				if !(len(args) <= 2) {
+				if len(args) < 1 {
 					return WrongArgumentsAmount("loop", len(args), "1-2", token)
 				}
 
@@ -294,7 +296,7 @@ func init() {
 
 		"while": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-				if !(len(args) == 2) {
+				if len(args) < 2 {
 					return WrongArgumentsAmount("while", len(args), "2", token)
 				}
 
@@ -392,9 +394,9 @@ func init() {
 		},
 		"take": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-				if len(args) > 1 {
-					return WrongArgumentsAmount("take", len(args), "0-1", token)
-				}
+				//if len(args) {
+				//	return WrongArgumentsAmount("take", len(args), "0-1", token)
+				//}
 
 				reader := bufio.NewReader(os.Stdin)
 
@@ -430,7 +432,7 @@ func init() {
 		// Checking
 		"error?": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-				if len(args) != 1 {
+				if len(args) < 1 {
 					return TRUE
 				}
 
@@ -468,7 +470,7 @@ func init() {
 				}
 			},
 		},
-		"string": {
+		"string!": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) > 1 {
 					return WrongArgumentsAmount("string!", len(args), "1", token)
