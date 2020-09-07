@@ -139,6 +139,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.LBRACE, p.ParseHashLiteral)
 	//p.RegisterPrefix(token.NEWLINE, p.ParseNewLine)
 	//p.RegisterPrefix(token.ASSIGN, p.ParsePrefixExpression)
+	p.RegisterPrefix(token.MACRO, p.ParseMacroLiteral)
 
 	// Setup Infix Functions
 	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
@@ -853,22 +854,39 @@ func (p *Parser) ParseHashLiteral() ast.Expression {
 	return hash
 }
 
+// ParseBreak parse a break token
 func (p *Parser) ParseBreak() ast.Expression {
 	return &ast.Break{
 		Token: p.currentToken,
 	}
 }
 
+// ParseNull parse a null token
 func (p *Parser) ParseNull() ast.Expression {
 	return &ast.Null{
 		Token: p.currentToken,
 	}
 }
 
-func (p *Parser) ParseNewLine() ast.Expression {
-	return &ast.Null{
+// ParseMacroLiteral parses a macro definition
+func (p *Parser) ParseMacroLiteral() ast.Expression {
+	lit := &ast.MacroLiteral{
 		Token: p.currentToken,
 	}
+
+	if !p.ExpectPeek(token.LPAREN) {
+		return nil
+	}
+
+	lit.Parameters = p.ParseFunctionParameters()
+
+	if !p.ExpectPeek(token.LBRACE) {
+		return nil
+	}
+
+	lit.Body = p.ParseBlockStatement()
+
+	return lit
 }
 
 //func (p *Parser) ParseAssignmentExpression(expression ast.Expression) ast.Expression {
@@ -878,6 +896,7 @@ func (p *Parser) ParseNewLine() ast.Expression {
 //	}
 //}
 
+// FormatFloat formats floats into a string
 func FormatFloat(t float64) string {
 	return strconv.FormatFloat(t, 'f', -1, 64)
 }

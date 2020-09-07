@@ -10,6 +10,8 @@ import (
 
 const LinesAround = 4
 
+// PrintParserError prints a ParseError by reading its filename and printing a pretty message
+// It also doesnt break for REPL which is an upside
 func PrintParserError(err *ParseError) {
 	fmt.Printf("Parser Error: %s, at %d:%d, in file %s\n",
 		err.Message, err.RowNumber, err.ColumnNumber, err.Filename)

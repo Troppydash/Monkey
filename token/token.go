@@ -60,6 +60,8 @@ const (
 
 	STRING  = "STRING"
 	NEWLINE = "NEWLINE"
+
+	MACRO = "MACRO"
 )
 
 // The Type of a Token
@@ -117,6 +119,8 @@ var keywords = map[string]TokenType{
 
 	"null":  NULL,
 	"break": BREAK,
+
+	"macro": MACRO,
 }
 
 // Return a TokenType from a plain string

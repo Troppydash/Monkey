@@ -1,3 +1,4 @@
 // TODO: Add parameter check
-let add = fn(x, y) { x + y }
-add(5, 5)
+let add = macro(x, y) { x + y }
+
+add(1, 2);

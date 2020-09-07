@@ -60,7 +60,8 @@ func Start(in io.Reader, out io.Writer) {
 		// Parse Program
 		program := p.ParseProgram()
 		if p.HasError() {
-			PrintParserErrors(out, p.Errors())
+			// we've done it when calling p.ParseProgram
+			//PrintParserErrors(out, p.Errors())
 			continue
 		}
 

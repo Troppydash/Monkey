@@ -504,6 +504,34 @@ func (hl *HashLiteral) ToString() string {
 	return out.String()
 }
 
+// MacroLiteral represent a macro def
+type MacroLiteral struct {
+	Token      token.Token
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (ml *MacroLiteral) ExpressionNode() {}
+func (ml *MacroLiteral) TokenLiteral() string {
+	return ml.Token.Literal
+}
+func (ml *MacroLiteral) ToString() string {
+	var out strings.Builder
+
+	var params []string
+	for _, p := range ml.Parameters {
+		params = append(params, p.ToString())
+	}
+
+	out.WriteString(ml.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(")")
+	out.WriteString(ml.Body.ToString())
+
+	return out.String()
+}
+
 func AddOptionalString(out *strings.Builder, str string) {
 	if !options.NicerToString {
 		out.WriteString(str)

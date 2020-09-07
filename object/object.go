@@ -22,7 +22,8 @@ const (
 	BuiltinObj     = "BUILTIN"      // Builtin Functions
 	ArrayObj       = "ARRAY"        // Arrays
 	HashObj        = "HASH"         // Hashmaps
-	QuoteObj       = "QUOTE"
+	QuoteObj       = "QUOTE"        // Quotes
+	MacroObj       = "MACRO"        // Macros
 )
 
 // The type of the object
@@ -286,4 +287,32 @@ func (q *Quote) Type() ObjectType {
 }
 func (q *Quote) Inspect() string {
 	return "QUOTE(" + q.Node.ToString() + ")"
+}
+
+// Macro represents a macro definition
+type Macro struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Environment
+}
+
+func (m *Macro) Type() ObjectType {
+	return MacroObj
+}
+func (m *Macro) Inspect() string {
+	var out strings.Builder
+
+	var params []string
+	for _, p := range m.Parameters {
+		params = append(params, p.ToString())
+	}
+
+	out.WriteString("macro")
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {")
+	out.WriteString(m.Body.ToString())
+	out.WriteString("}")
+
+	return out.String()
 }
