@@ -60,6 +60,8 @@ func addMacro(stmt ast.Statement, env *object.Environment) {
 
 // ExpandMacros takes a root program node and expands all the macros calls with the macros defined
 // in the environment passed in
+//
+// It returns back the root program node
 func ExpandMacros(program ast.Node, env *object.Environment) ast.Node {
 	return ast.Modify(program, func(node ast.Node) ast.Node {
 		callExpression, ok := node.(*ast.CallExpression)

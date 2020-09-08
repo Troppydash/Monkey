@@ -28,11 +28,18 @@ func PrintParserErrors(out io.Writer, errors []*parser.ParseError) {
 // Start the REPL by repeating asking for input
 func Start(in io.Reader, out io.Writer) {
 
-	// Create a new Scanner
-	scanner := bufio.NewScanner(in)
-
 	// REPL Environment
 	env := object.NewEnvironment()
+
+	// Link std
+	err := evaluator.LinkSTD(env)
+	if err != nil {
+		fmt.Printf("Failed to compile the standard library\n")
+		return
+	}
+
+	// Create a new Scanner
+	scanner := bufio.NewScanner(in)
 
 	for {
 		// Display Prompt Header

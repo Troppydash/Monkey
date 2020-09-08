@@ -1,7 +1,12 @@
 // builtin declarations
 include("builtin.mky")
+
 // constants
 include("constants.mky")
+
 // array functions
 include("array.mky")
+
+// macros
+include("macro.mky")
 

@@ -695,12 +695,14 @@ func (p *Parser) ParseCallExpression(function ast.Expression) ast.Expression {
 	}
 
 	// So that last parameter can be a function
-	if p.PeekTokenIs(token.HASH) {
-		p.NextToken()
-		exp.Arguments = append(exp.Arguments, p.ParseHashFunctionLiteral())
-	} else if p.PeekTokenIs(token.FUNCTION) {
-		p.NextToken()
-		exp.Arguments = append(exp.Arguments, p.ParseFunctionLiteral())
+	for p.PeekTokenIs(token.HASH) || p.PeekTokenIs(token.FUNCTION) {
+		if p.PeekTokenIs(token.HASH) {
+			p.NextToken()
+			exp.Arguments = append(exp.Arguments, p.ParseHashFunctionLiteral())
+		} else if p.PeekTokenIs(token.FUNCTION) {
+			p.NextToken()
+			exp.Arguments = append(exp.Arguments, p.ParseFunctionLiteral())
+		}
 	}
 
 	return exp

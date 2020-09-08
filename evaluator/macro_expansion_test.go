@@ -86,6 +86,19 @@ func TestExpandMacros(t *testing.T) {
 				reverse(2 + 2, 10 - 5)`,
 			`(10 - 5) - (2 + 2)`,
 		},
+		{
+			`
+let unless = macro(cond, cons, alter) {
+	quote(if (!(unquote(cond))) {
+		unquote(cons)
+	} else {
+		unquote(alter)
+	})
+}
+unless(10 > 5, write("not"), write("greater"))
+`,
+			`if (!(10 > 5)) { write("not") } else { write("greater") }`,
+		},
 	}
 
 	for _, tt := range tests {

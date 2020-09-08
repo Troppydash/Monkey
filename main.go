@@ -21,9 +21,9 @@ func main() {
 		env := object.NewEnvironment()
 
 		// Link std
-		err := evaluator.LinkAndEval("std", env)
+		err := evaluator.LinkSTD(env)
 		if err != nil {
-			fmt.Printf("Failed to compile file %q\n", filename)
+			fmt.Printf("Failed to compile the standard library\n")
 			return
 		}
 

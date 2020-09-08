@@ -1,4 +1,18 @@
 // TODO: Add parameter check
-let add = macro(x, y) { x + y }
+// TODO: Multiple functions chaining
 
-add(1, 2);
+// unless$(2 > 10, writeLine("Smaller"), writeLine("Bigger"))
+
+let ifnot = fn(cond, cons, alt) {
+    if !cond {
+        cons()
+    } else {
+        alt()
+    }
+}
+
+ifnot(1 > 12) #{
+    writeLine("Smaller")
+} #{
+    writeLine("Bigger")
+}

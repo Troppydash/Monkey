@@ -1,0 +1,24 @@
+let ifnot$ = macro(cond, consq, alt) {
+    quote(if (!(unquote(cond))) {
+        //if typeof(unquote(consq)) == FUNCTION {
+          //  unquote(consq)()
+        //} else {
+        // TODO: Fix this
+            unquote(consq)
+        //}
+    } else {
+        //if typeof(unquote(alt)) == FUNCTION {
+          //  unquote(alt)()
+        //} else {
+            unquote(alt)
+        //}
+    })
+}
+
+let ifnot = fn(cond, cons, alt) {
+    if !cond {
+        cons()
+    } else {
+        alt()
+    }
+}

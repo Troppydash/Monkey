@@ -54,6 +54,7 @@ func init() {
 					return WrongArgumentsAmount("include", len(args), "1", token)
 				}
 
+				// TODO: Make this an error
 				str, ok := args[0].(*object.String)
 				if !ok {
 					return NULL
