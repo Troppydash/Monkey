@@ -1,6 +1,4 @@
-include("std")
 include("questions.mky")
-
 
 "Welcome to the Monkey Quiz!";
 "Created by Troppydash";

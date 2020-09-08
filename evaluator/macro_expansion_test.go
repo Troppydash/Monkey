@@ -4,6 +4,7 @@ import (
 	"Monkey/ast"
 	"Monkey/lexer"
 	"Monkey/object"
+	"Monkey/options"
 	"Monkey/parser"
 	"testing"
 )
@@ -99,7 +100,28 @@ unless(10 > 5, write("not"), write("greater"))
 `,
 			`if (!(10 > 5)) { write("not") } else { write("greater") }`,
 		},
+		//		{
+		//			`let ifnot$ = macro(cond, consq, alt) {
+		//    quote(if (!(unquote(cond))) {
+		//        if typeof(unquote(consq)) == FUNCTION {
+		//			tmp()
+		//        } else {
+		//        // TODO: Fix this
+		//            unquote(consq)
+		//        }
+		//    })
+		//}
+		//ifnot$(1 > 12, #{
+		//                   writeLine("Smaller")
+		//               }, #{
+		//                      writeLine("Bigger")
+		//                  })
+		//`,
+		//			`12`,
+		//		},
 	}
+
+	options.NicerToString = true
 
 	for _, tt := range tests {
 		expected := testParseProgram(tt.expected)
@@ -111,7 +133,7 @@ unless(10 > 5, write("not"), write("greater"))
 
 		if expanded.ToString() != expected.ToString() {
 			t.Errorf("not equal. want=%q, got=%q",
-				expanded.ToString(), expanded.ToString())
+				expanded.ToString(), expected.ToString())
 		}
 	}
 }

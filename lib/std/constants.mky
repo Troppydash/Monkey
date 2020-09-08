@@ -6,3 +6,5 @@ let BOOLEAN = "BOOLEAN"
 let HASH = "HASH"
 let ARRAY = "ARRAY"
 let FUNCTION = "FUNCTION"
+
+let BREAK = "BREAK"

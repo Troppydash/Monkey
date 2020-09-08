@@ -11,8 +11,12 @@ let ifnot = fn(cond, cons, alt) {
     }
 }
 
-ifnot(1 > 12) #{
-    writeLine("Smaller")
-} #{
-    writeLine("Bigger")
+let i = 0
+
+while$(i < 10) #{
+    i;
+    i = i + 1
+    if i > 5 {
+        return break
+    }
 }
