@@ -158,7 +158,9 @@ type BuiltinFunction func(token token.Token, env *Environment, args ...Object) O
 
 // Builtin function wrapper
 type Builtin struct {
-	Fn BuiltinFunction
+	Fn         BuiltinFunction
+	Parameters int
+	VarArgs    bool
 }
 
 func (b *Builtin) Type() ObjectType {

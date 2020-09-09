@@ -439,12 +439,26 @@ func EvalArrayIndexExpression(array object.Object, start object.Object, end obje
 func ApplyFunction(token token.Token, function object.Object, args []object.Object, environment *object.Environment) object.Object {
 	switch fn := function.(type) {
 	case *object.Function:
-		extendedEnv := ExtendFunctionEnv(fn, args)
+		requiredPar := len(fn.Parameters)
+
+		for len(args) < requiredPar {
+			args = append(args, NULL)
+		}
+
+		extendedEnv := ExtendFunctionEnv(fn, args[:requiredPar])
 		evaluated := Eval(fn.Body, extendedEnv)
 		return UnwrapReturnValue(evaluated)
 
 	case *object.Builtin:
-		// TODO: Forward declare
+		if fn.VarArgs {
+			return fn.Fn(token, environment, args...)
+		}
+
+		requiredPar := fn.Parameters
+		if len(args) > requiredPar {
+			args = args[:requiredPar]
+		}
+
 		return fn.Fn(token, environment, args...)
 
 	default:

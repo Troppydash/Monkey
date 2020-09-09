@@ -1,0 +1,41 @@
+include("constants.mky")
+
+let while = macro(cond, func) {
+    quote(__while(#{
+         unquote(cond)
+    }, unquote(func)) )
+}
+
+let for = macro(init, cond, aft, func) {
+    quote(#{
+        unquote(init)
+        __loop(#{
+            let conti = unquote(cond)
+            if !(conti) {
+                return break
+            }
+            let fuc = unquote(func)
+            fuc()
+
+            unquote(aft)
+        })
+    }())
+}
+
+let ifnot = macro(cond, consq, alt) {
+    quote(if (!(unquote(cond))) {
+        let tmp = unquote(consq)
+        if typeof(tmp) == FUNCTION {
+            tmp()
+        } else {
+            tmp
+        }
+    } else {
+        let tmp = unquote(alt)
+        if typeof(tmp) == FUNCTION {
+           tmp()
+        } else {
+            tmp
+        }
+    })
+}

@@ -1,22 +1,5 @@
 // TODO: Add parameter check
 // TODO: Multiple functions chaining
 
-// unless$(2 > 10, writeLine("Smaller"), writeLine("Bigger"))
 
-let ifnot = fn(cond, cons, alt) {
-    if !cond {
-        cons()
-    } else {
-        alt()
-    }
-}
 
-let i = 0
-
-while$(i < 10) #{
-    i;
-    i = i + 1
-    if i > 5 {
-        return break
-    }
-}

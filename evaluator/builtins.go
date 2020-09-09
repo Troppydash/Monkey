@@ -45,6 +45,7 @@ func init() {
 					Value: string(args[0].Type()),
 				}
 			},
+			Parameters: 1,
 		},
 
 		// TODO: Reorder function parameter
@@ -76,6 +77,7 @@ func init() {
 
 				return NULL
 			},
+			Parameters: 1,
 		},
 
 		// Array
@@ -96,7 +98,9 @@ func init() {
 					return ArgumentNotSupported("len", args[0].Type(), token)
 				}
 			},
+			Parameters: 1,
 		},
+
 		"keys": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
@@ -119,6 +123,7 @@ func init() {
 					Elements: keys,
 				}
 			},
+			Parameters: 1,
 		},
 
 		"range": {
@@ -206,6 +211,7 @@ func init() {
 					return WrongArgumentsAmount("range", len(args), "1-3", token)
 				}
 			},
+			Parameters: 3,
 		},
 		"push": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -226,6 +232,7 @@ func init() {
 
 				return &object.Array{Elements: newElements}
 			},
+			Parameters: 2,
 		},
 		"append": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -242,10 +249,11 @@ func init() {
 				arr.Elements = append(arr.Elements, args[1])
 				return NULL
 			},
+			Parameters: 2,
 		},
 		// TODO: Pop, map, forEach, repeat
 
-		"loop": {
+		"__loop": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) < 1 {
 					return WrongArgumentsAmount("loop", len(args), "1-2", token)
@@ -293,9 +301,10 @@ func init() {
 				}
 				return NULL
 			},
+			Parameters: 2,
 		},
 
-		"while": {
+		"__while": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) < 2 {
 					return WrongArgumentsAmount("while", len(args), "2", token)
@@ -320,6 +329,10 @@ func init() {
 					if CheckError(res) {
 						return res
 					}
+					if res.Type() == object.BreakObj {
+						break
+					}
+
 					result = ApplyFunction(token, fn, []object.Object{}, env)
 					if CheckError(result) {
 						return result
@@ -327,9 +340,10 @@ func init() {
 				}
 				return NULL
 			},
+			Parameters: 2,
 		},
 
-		"set": {
+		"__set": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if !(len(args) == 3) {
 					return WrongArgumentsAmount("get", len(args), "3", token)
@@ -362,14 +376,16 @@ func init() {
 
 				return args[2]
 			},
+			Parameters: 3,
 		},
 
 		// IO
-		"format": {
+		"__format": {
 			// TODO: Implem
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				return NULL
 			},
+			Parameters: 1,
 		},
 		"write": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -381,6 +397,7 @@ func init() {
 				fmt.Print(strings.Join(out, " "))
 				return NULL
 			},
+			VarArgs: true,
 		},
 		"writeLine": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -392,6 +409,7 @@ func init() {
 				fmt.Println(strings.Join(out, " "))
 				return NULL
 			},
+			VarArgs: true,
 		},
 		"take": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -410,6 +428,7 @@ func init() {
 					Value: string(text),
 				}
 			},
+			Parameters: 1,
 		},
 		"takeLine": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -427,6 +446,7 @@ func init() {
 					Value: string(text),
 				}
 			},
+			Parameters: 1,
 		},
 
 		// TODO: Add make error && panic/fatalError
@@ -444,6 +464,7 @@ func init() {
 					return FALSE
 				}
 			},
+			Parameters: 1,
 		},
 		"null?": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -453,6 +474,7 @@ func init() {
 
 				return NativeBoolToBooleanObject(args[0].Type() == object.NullObj)
 			},
+			Parameters: 1,
 		},
 
 		// Casting
@@ -470,6 +492,7 @@ func init() {
 					return NativeBoolToBooleanObject(IsTruthful(args[0]))
 				}
 			},
+			Parameters: 1,
 		},
 		"string!": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -493,6 +516,7 @@ func init() {
 					}
 				}
 			},
+			Parameters: 1,
 		},
 		"number!": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -531,6 +555,7 @@ func init() {
 
 				return ArgumentNotSupported("number", args[0].Type(), token)
 			},
+			Parameters: 1,
 		},
 	}
 }

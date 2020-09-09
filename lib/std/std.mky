@@ -4,9 +4,13 @@ include("builtin.mky")
 // constants
 include("constants.mky")
 
+// control_flow
+include("control_flow.mky")
+
 // array functions
 include("array.mky")
 
 // macros
 include("macro.mky")
+
 

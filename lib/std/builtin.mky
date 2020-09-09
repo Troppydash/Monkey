@@ -18,11 +18,9 @@ let push = fn(arr, elem) {}
 
 let append = fn(arr, elem) {}
 
-let loop = fn(func, amount) {}
+let __loop = fn(func, amount) {}
 
-let while = fn(func, pred) {}
-
-let set = fn(ele, index, newValue) {}
+let __set = fn(ele, index, newValue) {}
 
 let format = fn() {}
 

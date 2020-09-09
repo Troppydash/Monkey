@@ -1,33 +1,3 @@
-let ifnot$ = macro(cond, consq, alt) {
-    quote(if (!(unquote(cond))) {
-        let tmp = unquote(consq)
-        if typeof(tmp) == FUNCTION {
-            tmp()
-        } else {
-            tmp
-        }
-    } else {
-        let tmp = unquote(alt)
-        if typeof(tmp) == FUNCTION {
-           tmp()
-        } else {
-            tmp
-        }
-    })
-}
-
-let ifnot = fn(cond, cons, alt) {
-    if !cond {
-        cons()
-    } else {
-        alt()
-    }
-}
-
 // TODO make some helpers
 // Helper functions begin with __
-let while$ = macro(cond, func) {
-    quote(while(#{
-      unquote(cond)
-    }, unquote(func)))
-}
+
