@@ -1,0 +1,16 @@
+let i = 0
+assertEq(i, 0)
+i = i + 2
+assertEq(i, 2)
+
+let arr = range(10)
+assertEq(arr, range(10))
+arr = range(5)
+assertEq(arr, range(5))
+arr[1] = 99
+assertEq(arr, [0, 99, 2, 3, 4])
+
+let has = { "yes": "no" }
+has["yes"] = "yes"
+assertEq(has, { "yes": "yes" })
+

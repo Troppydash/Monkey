@@ -64,6 +64,8 @@ func Modify(node Node, modifier ModifierFunc) Node {
 		for i, _ := range node.Arguments {
 			node.Arguments[i], _ = Modify(node.Arguments[i], modifier).(Expression)
 		}
+	case *MacroLiteral:
+		node.Body, _ = Modify(node.Body, modifier).(*BlockStatement)
 	}
 	return modifier(node)
 }

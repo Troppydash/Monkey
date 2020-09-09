@@ -1,0 +1,28 @@
+include("constants.mky")
+
+let assert = macro(exp, message) {
+    quote(
+        if !unquote(exp) {
+            let message = unquote(message)
+            if null?(message) {
+                panic!("assert Failed")
+            } else {
+                panic!(message)
+            }
+        }
+    )
+}
+
+
+let assertEq = fn(left, right, message) {
+    if null?(message) {
+        message = "\nassertEq Failed"
+    } else {
+        message = "\n" + message
+    }
+    if string(left) != string(right) {
+        message = message + ": LEFT->" + string(left) + ", RIGHT->" + string(right) + "\n"
+        panic!(message)
+    }
+}
+

@@ -76,7 +76,12 @@ func ExpandMacros(program ast.Node, env *object.Environment) ast.Node {
 		}
 
 		// get macro args and expand the environment
+		for len(callExpression.Arguments) < len(macro.Parameters) {
+			callExpression.Arguments = append(callExpression.Arguments, &ast.Null{})
+		}
+
 		args := quoteArgs(callExpression)
+
 		evalEnv := extendMacroEnv(macro, args)
 
 		// eval macro body

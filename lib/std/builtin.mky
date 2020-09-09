@@ -38,7 +38,8 @@ let null? = fn(ele) {}
 
 let bool! = fn(ele) {}
 
-let string! = fn(ele) {}
+let string = fn(ele) {}
 
 let number! = fn(ele) {}
 
+let panic! = fn(message) {}

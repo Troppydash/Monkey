@@ -35,6 +35,20 @@ func init() {
 	builtins = map[string]*object.Builtin{
 		// TODO: Math Functions
 
+		"panic!": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				switch len(args) {
+				default:
+					fallthrough
+				case 0:
+					return NewFatalError(token.ToTokenData(), "panic! called")
+				case 1:
+					return NewFatalError(token.ToTokenData(), args[0].Inspect())
+				}
+			},
+			Parameters: 1,
+		},
+
 		"typeof": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) < 1 {
@@ -494,11 +508,11 @@ func init() {
 			},
 			Parameters: 1,
 		},
-		"string!": {
+		"string": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-				if len(args) > 1 {
-					return WrongArgumentsAmount("string!", len(args), "1", token)
-				}
+				//if len(args) > 1 {
+				//	return WrongArgumentsAmount("string!", len(args), "1", token)
+				//}
 
 				target := args[0]
 

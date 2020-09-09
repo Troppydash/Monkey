@@ -15,7 +15,11 @@ let for = macro(init, cond, aft, func) {
                 return break
             }
             let fuc = unquote(func)
-            fuc()
+            if typeof(fuc) == FUNCTION {
+                fuc()
+            } else {
+                fuc
+            }
 
             unquote(aft)
         })

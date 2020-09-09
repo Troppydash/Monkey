@@ -1,5 +1,4 @@
 // TODO: Add parameter check
 // TODO: Multiple functions chaining
 
-
-
+include("tests/assign.mky")
