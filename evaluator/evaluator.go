@@ -144,18 +144,18 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		env.Store(node.Name.Value, val)
 
-	case *ast.AssignmentExpression:
-		val := Eval(node.Value, env)
-		if CheckError(val) {
-			return val
-		}
-
-		if _, ok := env.Get(node.Ident.Value); !ok {
-			// Cannot get the variable
-			return NewFatalError(node.Token.ToTokenData(), "Cannot find variable %s in the current scope", node.Ident.Value)
-		}
-		env.Replace(node.Ident.Value, val)
-		return val
+	//case *ast.AssignmentExpression:
+	//	val := Eval(node.Value, env)
+	//	if CheckError(val) {
+	//		return val
+	//	}
+	//
+	//	if _, ok := env.Get(node.Ident.Value); !ok {
+	//		// Cannot get the variable
+	//		return NewFatalError(node.Token.ToTokenData(), "Cannot find variable %s in the current scope", node.Ident.Value)
+	//	}
+	//	env.Replace(node.Ident.Value, val)
+	//	return val
 
 	case *ast.Identifier:
 		return EvalIdentifier(node, env)
@@ -588,10 +588,62 @@ func EvalOperatorExpression(token token.Token, operator string, left object.Obje
 //	assign.SetValue(value)
 //	return NULL
 //}
+func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment) object.Object {
+	right := Eval(node.Right, env)
+	if CheckError(right) {
+		return right
+	}
+
+	switch lft := node.Left.(type) {
+	case *ast.IndexExpression:
+		value := Eval(lft.Left, env)
+		index := Eval(lft.Start, env)
+		switch value.(type) {
+		case *object.Hash:
+			value, _ := value.(*object.Hash)
+
+			hashKey, ok := index.(object.Hashable)
+			if !ok {
+				return NewFatalError(node.Token.ToTokenData(), "unusable as hash key: %s", index.Type())
+			}
+
+			value.Pairs[hashKey.HashKey()] = object.HashPair{Key: index, Value: right}
+
+		case *object.Array:
+			arr, _ := value.(*object.Array)
+
+			index, ok := index.(*object.Integer)
+			if !ok {
+				return NewFatalError(node.Token.ToTokenData(), "unusable index key: %s", index.Type())
+			}
+			arr.Elements[int(index.Value)] = right
+
+		}
+	default:
+		identifier, ok := lft.(*ast.Identifier)
+		if !ok {
+			return NewFatalError(node.Token.ToTokenData(), "Cannot use non identifier in an expression")
+		}
+		if _, ok := env.Get(identifier.Value); !ok {
+			// Cannot get the variable
+			return NewFatalError(node.Token.ToTokenData(), "Cannot find variable %s in the current scope", identifier.Value)
+		}
+		env.Replace(identifier.Value, right)
+	}
+
+	return right
+}
 
 // Eval Infix Expression
 func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) object.Object {
 	operator := node.Operator
+
+	// TODO, fix this monkey patching shit
+	// Make assign parse from right to left too
+	if operator == token.ASSIGN {
+		return EvalAssignmentExpression(node, env)
+	}
+
 	left := Eval(node.Left, env)
 	if CheckError(left) {
 		return left
@@ -609,37 +661,6 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 		return right
 	}
 
-	// TODO, fix this monkey patching shit
-	// Make assign parse from right to left too
-	if operator == token.ASSIGN {
-		if lft, ok := node.Left.(*ast.IndexExpression); ok {
-			value := Eval(lft.Left, env)
-			index := Eval(lft.Start, env)
-			switch value.(type) {
-			case *object.Hash:
-				value, _ := value.(*object.Hash)
-
-				hashKey, ok := index.(object.Hashable)
-				if !ok {
-					return NewFatalError(node.Token.ToTokenData(), "unusable as hash key: %s", index.Type())
-				}
-
-				value.Pairs[hashKey.HashKey()] = object.HashPair{Key: index, Value: right}
-
-				return right
-			case *object.Array:
-				arr, _ := value.(*object.Array)
-
-				index, ok := index.(*object.Integer)
-				if !ok {
-					return NewFatalError(node.Token.ToTokenData(), "unusable index key: %s", index.Type())
-				}
-				arr.Elements[int(index.Value)] = right
-
-				return right
-			}
-		}
-	}
 	// Try ident
 	//switch operator {
 	//case token.ASSIGN:

@@ -433,15 +433,15 @@ func (p *Parser) ParseIdentifier() ast.Expression {
 		Value: p.currentToken.Literal,
 	}
 
-	if p.PeekTokenIs(token.ASSIGN) {
-		p.NextToken()
-		p.NextToken()
-		return &ast.AssignmentExpression{
-			Token: p.currentToken,
-			Ident: ident,
-			Value: p.ParseExpression(LOWEST),
-		}
-	}
+	//if p.PeekTokenIs(token.ASSIGN) {
+	//	p.NextToken()
+	//	p.NextToken()
+	//	return &ast.AssignmentExpression{
+	//		Token: p.currentToken,
+	//		Ident: ident,
+	//		Value: p.ParseExpression(LOWEST),
+	//	}
+	//}
 	return ident
 }
 
