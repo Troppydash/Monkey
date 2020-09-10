@@ -1,3 +1,5 @@
+include("testing")
+
 let i = 0
 assertEq(i, 0)
 i = i + 2

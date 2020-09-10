@@ -1,0 +1,30 @@
+let fib = fn(n) {
+     if n < 2 {
+        return n
+     }
+    let f = 0
+    let s = 1
+    let i
+    for (i = 1, i < n, i = i + 1) #{
+        let tmp = s
+        s = s + f
+        f = tmp
+    }
+    return s
+}
+
+let badFib = fn(n) {
+    if n < 2 {
+        n
+    } else {
+        badFib(n-1) + badFib(n-2)
+    }
+}
+
+bench("fib(500)") #{
+    fib(500)
+}
+
+bench("badFib(30)") #{
+    badFib(30)
+}

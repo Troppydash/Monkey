@@ -38,6 +38,7 @@ func Modify(node Node, modifier ModifierFunc) Node {
 		node.ReturnValue, _ = Modify(node.ReturnValue, modifier).(Expression)
 
 	case *LetStatement:
+		node.Name, _ = Modify(node.Name, modifier).(*Identifier)
 		node.Value, _ = Modify(node.Value, modifier).(Expression)
 
 	case *FunctionLiteral:

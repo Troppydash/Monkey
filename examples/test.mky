@@ -1,0 +1,2 @@
+include("tests/assign.mky")
+include("bench")

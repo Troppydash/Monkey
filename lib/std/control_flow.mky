@@ -10,36 +10,19 @@ let for = macro(init, cond, aft, func) {
     quote(#{
         unquote(init)
         __loop(#{
-            let conti = unquote(cond)
-            if !(conti) {
+            if !unquote(cond) {
                 return break
             }
-            let fuc = unquote(func)
-            if typeof(fuc) == FUNCTION {
-                fuc()
-            } else {
-                fuc
-            }
-
+            unquote(func)()
             unquote(aft)
         })
     }())
 }
 
 let ifnot = macro(cond, consq, alt) {
-    quote(if (!(unquote(cond))) {
-        let tmp = unquote(consq)
-        if typeof(tmp) == FUNCTION {
-            tmp()
-        } else {
-            tmp
-        }
+    quote(if !unquote(cond) {
+        unquote(consq)()
     } else {
-        let tmp = unquote(alt)
-        if typeof(tmp) == FUNCTION {
-           tmp()
-        } else {
-            tmp
-        }
+        unquote(alt)()
     })
 }

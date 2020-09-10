@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Argument not supported error
@@ -34,6 +35,16 @@ var builtins map[string]*object.Builtin
 func init() {
 	builtins = map[string]*object.Builtin{
 		// TODO: Math Functions
+
+		"__time": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				now := time.Now()
+				return &object.Integer{
+					Value: float64(now.UnixNano() / 1000000),
+				}
+			},
+			Parameters: 0,
+		},
 
 		"panic!": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -78,16 +89,10 @@ func init() {
 				filename := str.Value
 
 				err := LinkAndEval(filename, env)
-				//old := tmp.CurrentProcessingFileDirectory
-				//abs := runner.GetInstance().ToAbsolute(filename)
-				//p, e := runner.GetInstance().CompileAbs(abs)
 				if err != nil {
 					return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
 
 				}
-				//Eval(p, env)
-				//runner.GetInstance().Pop(abs)
-				//tmp.CurrentProcessingFileDirectory = old
 
 				return NULL
 			},

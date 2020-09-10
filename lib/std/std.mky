@@ -4,9 +4,6 @@ include("builtin.mky")
 // constants
 include("constants.mky")
 
-// asserts
-include("testing.mky")
-
 // control_flow
 include("control_flow.mky")
 
@@ -16,4 +13,4 @@ include("array.mky")
 // macros
 include("macro.mky")
 
-
+include("time.mky")

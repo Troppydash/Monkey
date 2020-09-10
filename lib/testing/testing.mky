@@ -1,4 +1,9 @@
-include("constants.mky")
+let bench = fn(name, func) {
+    let start = timeMilli()
+    func()
+    let end = timeMilli()
+    name + " benchmark -> " + (end - start) + " ms";
+}
 
 let assert = macro(exp, message) {
     quote(
@@ -13,7 +18,6 @@ let assert = macro(exp, message) {
     )
 }
 
-
 let assertEq = fn(left, right, message) {
     if null?(message) {
         message = "\nassertEq Failed"
@@ -25,4 +29,3 @@ let assertEq = fn(left, right, message) {
         panic!(message)
     }
 }
-

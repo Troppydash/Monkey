@@ -1,0 +1,3 @@
+let timeMilli = fn() {
+    __time()
+}

@@ -1,5 +1,0 @@
-include("playground.mky")
-
-let hi = #{
-    "Hello " + name;
-}
