@@ -91,6 +91,8 @@ type Parser struct {
 
 	// This is an array of pointers
 	errors []*ParseError
+
+	done bool
 }
 
 // Check if parser have any error
@@ -179,11 +181,11 @@ func (p *Parser) RegisterInfix(tokenType token.TokenType, fn InfixParseFn) {
 
 // Advance the pointer by reading the next token from the lexer
 func (p *Parser) NextToken() {
-	// TODO: Goroutine
 	p.currentToken = p.peekToken
-	p.peekToken = p.lexer.NextToken()
+	p.peekToken = <-p.lexer.Tokens
 }
 
+// Deprecated
 func (p *Parser) PeekPeekToken() token.Token {
 	return p.lexer.PeekToken()
 }
@@ -539,9 +541,9 @@ func (p *Parser) ParseIfExpression() ast.Expression {
 	// Parse then case
 	expression.Consequence = p.ParseBlockStatement()
 
-	if p.PeekPeekToken().Type == token.ELSE {
-		p.RemoveNewLines()
-	}
+	//if p.PeekPeekToken().Type == token.ELSE {
+	//	p.RemoveNewLines()
+	//}
 
 	// Parse else case
 	if p.PeekTokenIs(token.ELSE) {

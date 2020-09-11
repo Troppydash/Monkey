@@ -16,6 +16,8 @@ type Lexer struct {
 	currentColumn int64
 
 	currentFile string
+
+	Tokens chan token.Token
 }
 
 // Create a new Lexer Struct
@@ -25,9 +27,22 @@ func New(input string, filename string) *Lexer {
 		currentColumn: 0,
 		currentRow:    1,
 		currentFile:   filename,
+		Tokens:        make(chan token.Token, 50),
 	}
 	// Set up pointers
 	l.ReadChar()
+
+	go (func() {
+		tok := l.NextToken()
+		l.Tokens <- tok
+		for tok.Type != token.EOF {
+			tok = l.NextToken()
+			l.Tokens <- tok
+		}
+		l.Tokens <- NewToken(token.EOF, 0)
+		l.Tokens <- NewToken(token.EOF, 0)
+	})()
+
 	return l
 }
 
@@ -56,6 +71,7 @@ func (l *Lexer) ReadChar() {
 	l.readPosition += 1
 }
 
+// Deprecated
 func (l *Lexer) PeekToken() token.Token {
 	cachedL := &Lexer{
 		input:         l.input,
