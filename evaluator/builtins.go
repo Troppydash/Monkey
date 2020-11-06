@@ -87,7 +87,6 @@ func init() {
 				}
 
 				filename := str.Value
-
 				err := LinkAndEval(filename, env)
 				if err != nil {
 					return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
@@ -95,6 +94,34 @@ func init() {
 				}
 
 				return NULL
+			},
+			Parameters: 1,
+		},
+
+		"import": {
+			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return WrongArgumentsAmount("import", len(args), "1", token)
+				}
+
+				// TODO: Make this an error
+				str, ok := args[0].(*object.String)
+				if !ok {
+					return NULL
+				}
+
+				filename := str.Value
+
+				module := &object.Module{
+					Env: object.NewEnvironment(),
+				}
+
+				err := LinkAndEvalModule(filename, module, token)
+				if err != nil {
+					return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
+				}
+
+				return module
 			},
 			Parameters: 1,
 		},

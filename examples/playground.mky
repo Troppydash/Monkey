@@ -1,5 +1,7 @@
-let time = module {
-    let first = "first"
-}
+let i = 0
+while( i < 10 ) #{
 
-time.first;
+    i;
+    i = i + 1
+
+}

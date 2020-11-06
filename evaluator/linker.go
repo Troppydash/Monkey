@@ -1,10 +1,12 @@
 package evaluator
 
 import (
+	"Monkey/ast"
 	"Monkey/object"
 	"Monkey/options"
 	"Monkey/runner"
 	"Monkey/tmp"
+	"Monkey/token"
 	"errors"
 )
 
@@ -24,6 +26,29 @@ func LinkSTD(env *object.Environment) error {
 		}
 	}
 
+	return nil
+}
+
+func LinkAndEvalModule(filename string, module *object.Module, token token.Token) error {
+	old := tmp.CurrentProcessingFileDirectory
+	abs := runner.GetInstance().ToAbsolute(filename)
+	program, e := runner.GetInstance().CompileAbs(abs)
+	if e != nil {
+		return e
+	}
+	module.Body = &ast.BlockStatement{
+		Token:      token,
+		Statements: program.Statements,
+	}
+	DefineMacros(program, module.Env)
+	expanded := ExpandMacros(program, module.Env)
+
+	Eval(expanded, module.Env)
+	if options.FatalErrors {
+		return errors.New("FatalError Encountered")
+	}
+	runner.GetInstance().Pop(abs)
+	tmp.CurrentProcessingFileDirectory = old
 	return nil
 }
 
