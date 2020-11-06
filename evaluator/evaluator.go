@@ -156,7 +156,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return &object.Module{
 			Body: node.Body,
-			Env:  object.NewEnclosingEnvironment(env),
+			Env:  newEnv,
 		}
 
 	case *ast.FunctionLiteral:
@@ -577,16 +577,7 @@ func EvalOperatorExpression(token token.Token, operator string, left object.Obje
 	}
 }
 
-//func EvalAssignmentExpression(token token.Token, left object.Object, right object.Object, env *object.Environment) object.Object {
-//	assign, ok := left.(object.Assignable)
-//	if !ok {
-//		return NewError(token.ToTokenData(), "assignment target not valid: %s %s %s",
-//			left.Type(), "=", right.Type())
-//	}
-//	value, ok := right.(*object.Integer)
-//	assign.SetValue(value)
-//	return NULL
-//}
+// EvalAssignmentExpression evaluates an assignment expression
 func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment) object.Object {
 	right := Eval(node.Right, env)
 	if CheckError(right) {
@@ -618,6 +609,19 @@ func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment
 			arr.Elements[int(index.Value)] = right
 
 		}
+	case *ast.InfixExpression:
+		value := Eval(lft.Left, env)
+		module, ok := value.(*object.Module)
+		if !ok {
+			return NewFatalError(node.Token.ToTokenData(), "left expression is not a module. got=%s", value.Type())
+		}
+
+		rgt, ok := lft.Right.(*ast.Identifier)
+		if !ok {
+			return NewFatalError(node.Token.ToTokenData(), "right expression is not an identifier. got=%s", lft.Right.TokenLiteral())
+		}
+		module.Env.Store(rgt.Value, right)
+
 	default:
 		identifier, ok := lft.(*ast.Identifier)
 		if !ok {
@@ -633,6 +637,24 @@ func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment
 	return right
 }
 
+func EvalDotExpression(left object.Object, node *ast.InfixExpression) object.Object {
+	module, ok := left.(*object.Module)
+	if !ok {
+		return NewFatalError(node.Token.ToTokenData(), "left expression is not a module. got=%s", left.Type())
+	}
+
+	right, ok := node.Right.(*ast.Identifier)
+	if !ok {
+		return NewFatalError(node.Token.ToTokenData(), "right expression is not an identifier. got=%s", node.Right.TokenLiteral())
+	}
+
+	val, ok := module.Env.Get(right.Value)
+	if !ok {
+		return NULL
+	}
+	return val
+}
+
 // Eval Infix Expression
 func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) object.Object {
 	operator := node.Operator
@@ -646,6 +668,10 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 	left := Eval(node.Left, env)
 	if CheckError(left) {
 		return left
+	}
+
+	if operator == token.DOT {
+		return EvalDotExpression(left, node)
 	}
 
 	// Eval Short Circuits

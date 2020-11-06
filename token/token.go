@@ -43,6 +43,9 @@ const (
 	LBRACKET = "["
 	RBRACKET = "]"
 
+	// Modules
+	DOT = "."
+
 	// Keywords
 	FUNCTION = "FUNCTION"
 	LET      = "LET"

@@ -125,6 +125,8 @@ func (l *Lexer) NextToken() token.Token {
 		for l.PeekChar() == '\n' || l.PeekChar() == '\r' {
 			l.ReadChar()
 		}
+	case '.':
+		tok = NewToken(token.DOT, l.ch)
 	case '+':
 		tok = NewToken(token.PLUS, l.ch)
 	case '-':

@@ -1,13 +1,5 @@
-"Testing"
-
-module {
-    let yes = 12
+let time = module {
+    let first = "first"
 }
 
-let t = module {
-    let no = false
-    "test";
-    no;
-}
-
-
+time.first;

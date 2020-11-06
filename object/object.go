@@ -113,6 +113,7 @@ func (e *Error) Inspect() string {
 		e.Message, e.RowNumber, e.ColumnNumber, e.Filename)
 }
 
+// Module type
 type Module struct {
 	Body *ast.BlockStatement
 	Env  *Environment

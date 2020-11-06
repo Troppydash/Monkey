@@ -30,6 +30,7 @@ const (
 	PREFIX  // !X or -X
 	CALL    // foobar()
 	INDEX   // [x]
+	DOT     // x.something
 )
 
 // A Map Contains a Token to Precedences key value pair
@@ -50,6 +51,7 @@ var precedences = map[token.TokenType]int{
 	token.PERCENT:  PRODUCT,
 	token.LPAREN:   CALL,
 	token.LBRACKET: INDEX,
+	token.DOT:      DOT,
 	token.ASSIGN:   ASSIGN,
 }
 
@@ -147,6 +149,7 @@ func New(l *lexer.Lexer) *Parser {
 	// Setup Infix Functions
 	p.infixParseFns = make(map[token.TokenType]InfixParseFn)
 	p.RegisterInfix(token.ASSIGN, p.ParseInfixExpression)
+	p.RegisterInfix(token.DOT, p.ParseInfixExpression)
 	p.RegisterInfix(token.PLUS, p.ParseInfixExpression)
 	p.RegisterInfix(token.MINUS, p.ParseInfixExpression)
 	p.RegisterInfix(token.SLASH, p.ParseInfixExpression)
