@@ -6,8 +6,6 @@ let quote = fn(ele) {}
 
 let unquote = fn(ele) {}
 
-let include = fn(filename) {}
-
 let import = fn(filename) {}
 
 let len = fn(ele) {}

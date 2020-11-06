@@ -1,7 +1,6 @@
-let i = 0
-while( i < 10 ) #{
+'yes';
 
+let i
+for(i = 12, i < 100, i = i + 1) #{
     i;
-    i = i + 1
-
 }

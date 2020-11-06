@@ -5,12 +5,12 @@ let fib = fn(n) {
     return fib(n-1) + fib(n-2)
 }
 
-while(#{true}) #{
+while(true) #{
    let input = take("enter a valid number")
    input = number!(input)
    if error?(input) {
        "An error occurred: ";
-       string!(input);
+       string(input);
    } else {
        fib(input);
    }

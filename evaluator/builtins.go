@@ -74,29 +74,28 @@ func init() {
 		},
 
 		// TODO: Reorder function parameter
-		"include": {
-			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-				if len(args) != 1 {
-					return WrongArgumentsAmount("include", len(args), "1", token)
-				}
-
-				// TODO: Make this an error
-				str, ok := args[0].(*object.String)
-				if !ok {
-					return NULL
-				}
-
-				filename := str.Value
-				err := LinkAndEval(filename, env)
-				if err != nil {
-					return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
-
-				}
-
-				return NULL
-			},
-			Parameters: 1,
-		},
+		//"include": {
+		//	Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
+		//		if len(args) != 1 {
+		//			return WrongArgumentsAmount("include", len(args), "1", token)
+		//		}
+		//
+		//		str, ok := args[0].(*object.String)
+		//		if !ok {
+		//			return NewFatalError(token.ToTokenData(), "include parameter is not type string")
+		//		}
+		//
+		//		filename := str.Value
+		//		err := LinkAndEval(filename, env)
+		//		if err != nil {
+		//			return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
+		//
+		//		}
+		//
+		//		return NULL
+		//	},
+		//	Parameters: 1,
+		//},
 
 		"import": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
@@ -113,7 +112,7 @@ func init() {
 				filename := str.Value
 
 				module := &object.Module{
-					Env: object.NewEnvironment(),
+					Env: object.NewEnclosingEnvironment(env),
 				}
 
 				err := LinkAndEvalModule(filename, module, token)

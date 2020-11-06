@@ -59,8 +59,11 @@ func LinkAndEval(filename string, env *object.Environment) error {
 	if e != nil {
 		return e
 	}
-	DefineMacros(program, env)
-	expanded := ExpandMacros(program, env)
+
+	included := ExpandInclude(program, env)
+
+	DefineMacros(included.(*ast.Program), env)
+	expanded := ExpandMacros(included, env)
 
 	Eval(expanded, env)
 	if options.FatalErrors {
@@ -69,4 +72,36 @@ func LinkAndEval(filename string, env *object.Environment) error {
 	runner.GetInstance().Pop(abs)
 	tmp.CurrentProcessingFileDirectory = old
 	return nil
+}
+
+func ExpandInclude(program ast.Node, env *object.Environment) ast.Node {
+	return ast.Modify(program, func(node ast.Node) ast.Node {
+		callExpression, ok := node.(*ast.CallExpression)
+		if !ok {
+			return node
+		}
+
+		identifier, ok := callExpression.Function.(*ast.Identifier)
+		if !ok {
+			return node
+		}
+		if identifier.Value != "include" {
+			return node
+		}
+
+		if len(callExpression.Arguments) != 1 {
+			return node
+		}
+		argument := Eval(callExpression.Arguments[0], env)
+		filename, ok := argument.(*object.String)
+		if !ok {
+			return node
+		}
+		err := LinkAndEval(filename.Value, env)
+		if err != nil {
+			return node
+		}
+
+		return &ast.Null{Token: callExpression.Token}
+	})
 }

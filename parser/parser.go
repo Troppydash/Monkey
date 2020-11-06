@@ -142,8 +142,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.LBRACKET, p.ParseArrayLiteral)
 
 	p.RegisterPrefix(token.LBRACE, p.ParseHashLiteral)
-	//p.RegisterPrefix(token.NEWLINE, p.ParseNewLine)
-	//p.RegisterPrefix(token.ASSIGN, p.ParsePrefixExpression)
 	p.RegisterPrefix(token.MACRO, p.ParseMacroLiteral)
 
 	// Setup Infix Functions
@@ -778,9 +776,6 @@ func (p *Parser) ParseExpressionList(end token.TokenType) []ast.Expression {
 
 	p.RemoveNewLines()
 
-	//if p.PeekTokenIs(token.COMMA) {
-	//	p.NextToken()
-	//}
 	if p.PeekTokenIs(end) {
 		p.NextToken()
 		return list

@@ -1,2 +1,5 @@
-include("tests/assign.mky")
-include("bench")
+let some_macro = macro(expression) {
+    quote(
+        writeLine(unquote(expression))
+    )
+}

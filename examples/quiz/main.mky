@@ -1,11 +1,12 @@
-include("questions.mky")
+let questions = import("questions.mky")
 
 "Welcome to the Monkey Quiz!";
 "Created by Troppydash";
 
-loop(fn(i) {
-    "Question " + (i+1);
-    askQuestion(i)
-}, len(questions))
+let i = 0
+for(null, i < len(questions.questions), i = i + 1) #{
+   "Question " + (i+1);
+    questions.askQuestion(i)
+}
 
-"Your result: " + numberCorrect + " out of " + len(questions);
+"Your result: " + questions.numberCorrect + " out of " + len(questions.questions);
