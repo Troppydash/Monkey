@@ -338,6 +338,20 @@ func (ie *IfExpression) ToString() string {
 	return out.String()
 }
 
+// A module expression
+type ModuleExpression struct {
+	Token token.Token
+	Body  *BlockStatement
+}
+
+func (ms *ModuleExpression) ExpressionNode() {}
+func (ms *ModuleExpression) TokenLiteral() string {
+	return ms.Token.Literal
+}
+func (ms *ModuleExpression) ToString() string {
+	return "module " + ms.Body.ToString()
+}
+
 // Function Definition Expression
 type FunctionLiteral struct {
 	Token      token.Token     // Fn Token

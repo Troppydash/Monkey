@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// error handling printing lines around
 const LinesAround = 4
 
 // PrintParserError prints a ParseError by reading its filename and printing a pretty message

@@ -1,4 +1,4 @@
-let continue = 1
+let continue = "CONTINUE"
 
 let STRING = "STRING"
 let NUMBER = "NUMBER"

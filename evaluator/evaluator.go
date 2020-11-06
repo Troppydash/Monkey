@@ -35,6 +35,7 @@ func NewError(data *token.TokenData, format string, a ...interface{}) *object.Er
 	return message
 }
 
+// CheckError returns if the object is an error object
 func CheckError(obj object.Object) bool {
 	if !options.FatalErrors {
 		return false
@@ -144,21 +145,19 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		env.Store(node.Name.Value, val)
 
-	//case *ast.AssignmentExpression:
-	//	val := Eval(node.Value, env)
-	//	if CheckError(val) {
-	//		return val
-	//	}
-	//
-	//	if _, ok := env.Get(node.Ident.Value); !ok {
-	//		// Cannot get the variable
-	//		return NewFatalError(node.Token.ToTokenData(), "Cannot find variable %s in the current scope", node.Ident.Value)
-	//	}
-	//	env.Replace(node.Ident.Value, val)
-	//	return val
-
 	case *ast.Identifier:
 		return EvalIdentifier(node, env)
+
+	case *ast.ModuleExpression:
+		newEnv := object.NewEnclosingEnvironment(env)
+		module := Eval(node.Body, newEnv)
+		if CheckError(module) {
+			return module
+		}
+		return &object.Module{
+			Body: node.Body,
+			Env:  object.NewEnclosingEnvironment(env),
+		}
 
 	case *ast.FunctionLiteral:
 		params := node.Parameters

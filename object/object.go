@@ -24,6 +24,7 @@ const (
 	HashObj        = "HASH"         // Hashmaps
 	QuoteObj       = "QUOTE"        // Quotes
 	MacroObj       = "MACRO"        // Macros
+	ModuleObj      = "MODULE"       // Modules
 )
 
 // The type of the object
@@ -110,6 +111,18 @@ func (e *Error) Type() ObjectType {
 func (e *Error) Inspect() string {
 	return fmt.Sprintf("Runtime Error: %s, at %d:%d, in file %s\n",
 		e.Message, e.RowNumber, e.ColumnNumber, e.Filename)
+}
+
+type Module struct {
+	Body *ast.BlockStatement
+	Env  *Environment
+}
+
+func (m *Module) Type() ObjectType {
+	return ModuleObj
+}
+func (m *Module) Inspect() string {
+	return "module" + m.Body.ToString()
 }
 
 type Function struct {

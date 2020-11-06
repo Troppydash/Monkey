@@ -133,6 +133,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.RegisterPrefix(token.IF, p.ParseIfExpression)
 	p.RegisterPrefix(token.FUNCTION, p.ParseFunctionLiteral)
 	p.RegisterPrefix(token.HASH, p.ParseHashFunctionLiteral)
+	p.RegisterPrefix(token.MODULE, p.ParseModuleExpression)
 
 	p.RegisterPrefix(token.STRING, p.ParseStringLiteral)
 
@@ -614,6 +615,17 @@ func (p *Parser) ParseHashFunctionLiteral() ast.Expression {
 	return fnLit
 }
 
+// ParseModuleExpression parses a module expression
+func (p *Parser) ParseModuleExpression() ast.Expression {
+	mLit := &ast.ModuleExpression{Token: p.currentToken}
+
+	if !p.ExpectPeek(token.LBRACE) {
+		return nil
+	}
+	mLit.Body = p.ParseBlockStatement()
+	return mLit
+}
+
 // Parse a function expression
 func (p *Parser) ParseFunctionLiteral() ast.Expression {
 	fnLit := &ast.FunctionLiteral{Token: p.currentToken}
@@ -892,13 +904,6 @@ func (p *Parser) ParseMacroLiteral() ast.Expression {
 
 	return lit
 }
-
-//func (p *Parser) ParseAssignmentExpression(expression ast.Expression) ast.Expression {
-//	fmt.Println("HI")
-//	return &ast.Null{
-//		Token: p.currentToken,
-//	}
-//}
 
 // FormatFloat formats floats into a string
 func FormatFloat(t float64) string {

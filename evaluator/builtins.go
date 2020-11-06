@@ -270,7 +270,7 @@ func init() {
 			},
 			Parameters: 2,
 		},
-		// TODO: Pop, map, forEach, repeat
+		// TODO: Pop, repeat
 
 		"__loop": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {

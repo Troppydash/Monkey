@@ -1,4 +1,13 @@
-let i
-for (i = 0, i < 999999, i = i + 1) #{
+"Testing"
 
+module {
+    let yes = 12
 }
+
+let t = module {
+    let no = false
+    "test";
+    no;
+}
+
+
