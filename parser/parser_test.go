@@ -250,7 +250,7 @@ func TestFloatingPointNumbers(t *testing.T) {
 	}{
 		{"1.5", 1.5},
 		{"300.0", 300.0},
-		{"0.", 0},
+		{"0", 0},
 		{"0.1", 0.1},
 	}
 

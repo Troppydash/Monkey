@@ -1,7 +1,7 @@
-NUMBER.prototype['add'] = fn (rhs) {
+STRING.prototype['add'] = fn (rhs) {
     return this + rhs
 }
 
 let number = 12
-number.add(99);
+'yes'.add(5);
 number.cheer()

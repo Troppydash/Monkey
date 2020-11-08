@@ -184,7 +184,7 @@ func (p *Parser) RegisterInfix(tokenType token.TokenType, fn InfixParseFn) {
 // Advance the pointer by reading the next token from the lexer
 func (p *Parser) NextToken() {
 	p.currentToken = p.peekToken
-	p.peekToken = <-p.lexer.Tokens
+	p.peekToken = p.lexer.NextToken()
 }
 
 // Deprecated
