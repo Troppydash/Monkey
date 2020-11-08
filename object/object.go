@@ -20,6 +20,7 @@ const (
 	FunctionObj    = "FUNCTION"     // fn
 	StringObj      = "STRING"       // ""
 	BuiltinObj     = "BUILTIN"      // Builtin Functions
+	ProtoObj       = "PROTO"        // Prototype functions
 	ArrayObj       = "ARRAY"        // Arrays
 	HashObj        = "HASH"         // Hashmaps
 	QuoteObj       = "QUOTE"        // Quotes
@@ -35,6 +36,11 @@ type Object interface {
 	Type() ObjectType // The type of the object
 	Inspect() string  // The ToString method
 	//GetValue() interface{}
+}
+
+type FunctionObject interface {
+	Object
+	FunctionObject()
 }
 
 // The integer wrapper
@@ -152,6 +158,9 @@ func (f *Function) Inspect() string {
 
 	return out.String()
 }
+func (f *Function) FunctionObject() {
+
+}
 
 // String object
 type String struct {
@@ -175,6 +184,7 @@ type Builtin struct {
 	Fn         BuiltinFunction
 	Parameters int
 	VarArgs    bool
+	Prototype  bool
 }
 
 func (b *Builtin) Type() ObjectType {
@@ -182,6 +192,9 @@ func (b *Builtin) Type() ObjectType {
 }
 func (b *Builtin) Inspect() string {
 	return "builtin function"
+}
+func (b *Builtin) FunctionObject() {
+
 }
 
 // An Array
@@ -331,4 +344,16 @@ func (m *Macro) Inspect() string {
 	out.WriteString("}")
 
 	return out.String()
+}
+
+type PrototypeFunction struct {
+	Fn   FunctionObject
+	This *Object
+}
+
+func (pf *PrototypeFunction) Type() ObjectType {
+	return ProtoObj
+}
+func (pf *PrototypeFunction) Inspect() string {
+	return "prototype function"
 }

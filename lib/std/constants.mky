@@ -1,10 +1,9 @@
 let continue = "CONTINUE"
 
 let STRING = "STRING"
-let NUMBER = "NUMBER"
+let NUMBER = "INTEGER"
 let BOOLEAN = "BOOLEAN"
 let HASH = "HASH"
 let ARRAY = "ARRAY"
 let FUNCTION = "FUNCTION"
-
-let BREAK = "BREAK"
+let ERROR = "ERROR"

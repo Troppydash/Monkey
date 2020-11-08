@@ -151,9 +151,9 @@ if (5 < 10) {
 
 	l := New(input, "TestFile")
 	for i, tt := range tests {
-		tok := l.NextToken()
+		tok := <-l.Tokens
 		for tok.Type == token.NEWLINE {
-			tok = l.NextToken()
+			tok = <-l.Tokens
 		}
 
 		if tok.Type != tt.expectedType {

@@ -459,7 +459,11 @@ func ApplyFunction(token token.Token, function object.Object, args []object.Obje
 		}
 
 		return fn.Fn(token, environment, args...)
-
+	case *object.PrototypeFunction:
+		environment.Store("this", *fn.This)
+		result := ApplyFunction(token, fn.Fn, args, environment)
+		environment.Delete("this")
+		return result
 	default:
 		return NewFatalError(token.ToTokenData(), "not a function: %s", function.Type())
 
@@ -587,7 +591,13 @@ func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment
 	switch lft := node.Left.(type) {
 	case *ast.IndexExpression:
 		value := Eval(lft.Left, env)
+		if CheckError(value) {
+			return value
+		}
 		index := Eval(lft.Start, env)
+		if CheckError(index) {
+			return index
+		}
 		switch value.(type) {
 		case *object.Hash:
 			value, _ := value.(*object.Hash)
@@ -637,22 +647,56 @@ func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment
 	return right
 }
 
-func EvalDotExpression(left object.Object, node *ast.InfixExpression) object.Object {
-	module, ok := left.(*object.Module)
-	if !ok {
-		return NewFatalError(node.Token.ToTokenData(), "left expression is not a module. got=%s", left.Type())
-	}
-
+func EvalDotExpression(left object.Object, node *ast.InfixExpression, env *object.Environment) object.Object {
+	var key string
 	right, ok := node.Right.(*ast.Identifier)
 	if !ok {
-		return NewFatalError(node.Token.ToTokenData(), "right expression is not an identifier. got=%s", node.Right.TokenLiteral())
+		evalRight := Eval(node.Right, env)
+		rightString, ok := evalRight.(*object.String)
+		if !ok {
+			return NewFatalError(node.Token.ToTokenData(), "right expression is not an identifier. got=%s", node.Right.TokenLiteral())
+		}
+		key = rightString.Value
+	} else {
+		key = right.Value
 	}
+	switch value := left.(type) {
+	case *object.Module:
 
-	val, ok := module.Env.Get(right.Value)
-	if !ok {
-		return NULL
+		val, ok := value.Env.Get(key)
+		if !ok {
+			return NULL
+		}
+		return val
+	default:
+		typeStr, ok := left.(*object.String)
+		if ok && key == "prototype" {
+			pts, ok := prototypes[object.ObjectType(typeStr.Value)]
+			if ok {
+				return pts
+			}
+		}
+
+		// prototype
+		obj, ok := prototypes[value.Type()]
+		if !ok {
+			return NewFatalError(node.Token.ToTokenData(), "no prototype functions found for expression. type=%s", value.Type())
+		}
+
+		key := &object.String{
+			Value: key,
+		}
+		fn, ok := obj.Pairs[key.HashKey()]
+		if !ok {
+			return NewFatalError(node.Token.ToTokenData(), "no prototype function named %q found for type=%s", key.Value, value.Type())
+		}
+
+		// TODO: Make this This an actual reference somehow
+		return &object.PrototypeFunction{
+			Fn:   fn.Value.(object.FunctionObject),
+			This: &value,
+		}
 	}
-	return val
 }
 
 // Eval Infix Expression
@@ -671,7 +715,7 @@ func EvalInfixExpression(node *ast.InfixExpression, env *object.Environment) obj
 	}
 
 	if operator == token.DOT {
-		return EvalDotExpression(left, node)
+		return EvalDotExpression(left, node, env)
 	}
 
 	// Eval Short Circuits

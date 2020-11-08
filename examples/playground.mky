@@ -1,6 +1,7 @@
-'yes';
-
-let i
-for(i = 12, i < 100, i = i + 1) #{
-    i;
+NUMBER.prototype['add'] = fn (rhs) {
+    return this + rhs
 }
+
+let number = 12
+number.add(99);
+number.cheer()

@@ -10,6 +10,9 @@ include("control_flow.mky")
 // array functions
 include("array.mky")
 
+// prototypes
+include("protos/protos.mky")
+
 // macros
 include("macro.mky")
 
