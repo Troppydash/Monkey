@@ -581,6 +581,20 @@ func EvalOperatorExpression(token token.Token, operator string, left object.Obje
 	}
 }
 
+func castExpressionToKey(node ast.Expression, token token.Token, env *object.Environment) object.Object {
+	key, ok := node.(*ast.Identifier)
+	if ok {
+		return &object.String{Value: key.Value}
+	}
+
+	nodeEval := Eval(node, env)
+	keyEval, ok := nodeEval.(*object.String)
+	if !ok {
+		return NewFatalError(token.ToTokenData(), "cannot cast expression to key. type=%s", nodeEval.Type())
+	}
+	return keyEval
+}
+
 // EvalAssignmentExpression evaluates an assignment expression
 func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment) object.Object {
 	right := Eval(node.Right, env)
@@ -598,39 +612,45 @@ func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment
 		if CheckError(index) {
 			return index
 		}
-		switch value.(type) {
+		switch val := value.(type) {
 		case *object.Hash:
-			value, _ := value.(*object.Hash)
-
 			hashKey, ok := index.(object.Hashable)
 			if !ok {
 				return NewFatalError(node.Token.ToTokenData(), "unusable as hash key: %s", index.Type())
 			}
 
-			value.Pairs[hashKey.HashKey()] = object.HashPair{Key: index, Value: right}
+			val.Pairs[hashKey.HashKey()] = object.HashPair{Key: index, Value: right}
 
 		case *object.Array:
-			arr, _ := value.(*object.Array)
-
 			index, ok := index.(*object.Integer)
 			if !ok {
 				return NewFatalError(node.Token.ToTokenData(), "unusable index key: %s", index.Type())
 			}
-			arr.Elements[int(index.Value)] = right
-
+			val.Elements[int(index.Value)] = right
 		}
 	case *ast.InfixExpression:
 		value := Eval(lft.Left, env)
-		module, ok := value.(*object.Module)
-		if !ok {
-			return NewFatalError(node.Token.ToTokenData(), "left expression is not a module. got=%s", value.Type())
+		if CheckError(value) {
+			return value
 		}
-
-		rgt, ok := lft.Right.(*ast.Identifier)
-		if !ok {
-			return NewFatalError(node.Token.ToTokenData(), "right expression is not an identifier. got=%s", lft.Right.TokenLiteral())
+		switch val := value.(type) {
+		case *object.Module:
+			key := castExpressionToKey(lft.Right, node.Token, env)
+			if CheckError(key) {
+				return key
+			}
+			keyString, _ := key.(*object.String)
+			val.Env.Store(keyString.Value, right)
+		case *object.Hash:
+			key := castExpressionToKey(lft.Right, node.Token, env)
+			if CheckError(key) {
+				return key
+			}
+			keyString, _ := key.(*object.String)
+			val.Pairs[keyString.HashKey()] = object.HashPair{Key: keyString, Value: right}
+		default:
+			return NewFatalError(node.Token.ToTokenData(), "left expression is not a valid target. got=%s", value.Type())
 		}
-		module.Env.Store(rgt.Value, right)
 
 	default:
 		identifier, ok := lft.(*ast.Identifier)
@@ -649,53 +669,74 @@ func EvalAssignmentExpression(node *ast.InfixExpression, env *object.Environment
 
 func EvalDotExpression(left object.Object, node *ast.InfixExpression, env *object.Environment) object.Object {
 	var key string
-	right, ok := node.Right.(*ast.Identifier)
-	if !ok {
+	switch right := node.Right.(type) {
+	case *ast.Identifier:
+		key = right.Value
+	default:
 		evalRight := Eval(node.Right, env)
 		rightString, ok := evalRight.(*object.String)
 		if !ok {
 			return NewFatalError(node.Token.ToTokenData(), "right expression is not an identifier. got=%s", node.Right.TokenLiteral())
 		}
 		key = rightString.Value
-	} else {
-		key = right.Value
 	}
+	//right, ok := node.Right.(*ast.Identifier)
+	//if !ok {
+	//	evalRight := Eval(node.Right, env)
+	//	rightString, ok := evalRight.(*object.String)
+	//	if !ok {
+	//		return NewFatalError(node.Token.ToTokenData(), "right expression is not an identifier. got=%s", node.Right.TokenLiteral())
+	//	}
+	//	key = rightString.Value
+	//} else {
+	//	key = right.Value
+	//}
 	switch value := left.(type) {
 	case *object.Module:
-
 		val, ok := value.Env.Get(key)
 		if !ok {
 			return NULL
 		}
 		return val
+	case *object.Hash:
+		keyString := &object.String{Value: key}
+		val, ok := value.Pairs[keyString.HashKey()]
+		if ok {
+			return val.Value
+		}
+		return sortObjectPrototypes(node, key, value)
 	default:
-		typeStr, ok := left.(*object.String)
-		if ok && key == "prototype" {
-			pts, ok := prototypes[object.ObjectType(typeStr.Value)]
-			if ok {
-				return pts
-			}
-		}
+		return sortObjectPrototypes(node, key, value)
+	}
+}
 
-		// prototype
-		obj, ok := prototypes[value.Type()]
-		if !ok {
-			return NewFatalError(node.Token.ToTokenData(), "no prototype functions found for expression. type=%s", value.Type())
+func sortObjectPrototypes(node *ast.InfixExpression, key string, value object.Object) object.Object {
+	typeStr, ok := value.(*object.String)
+	if ok && key == "prototype" {
+		pts, ok := prototypes[object.ObjectType(typeStr.Value)]
+		if ok {
+			return pts
 		}
+	}
 
-		key := &object.String{
-			Value: key,
-		}
-		fn, ok := obj.Pairs[key.HashKey()]
-		if !ok {
-			return NewFatalError(node.Token.ToTokenData(), "no prototype function named %q found for type=%s", key.Value, value.Type())
-		}
+	// prototype
+	obj, ok := prototypes[value.Type()]
+	if !ok {
+		return NewFatalError(node.Token.ToTokenData(), "no prototype functions found for expression. type=%s", value.Type())
+	}
 
-		// TODO: Make this This an actual reference somehow
-		return &object.PrototypeFunction{
-			Fn:   fn.Value.(object.FunctionObject),
-			This: &value,
-		}
+	keyStr := &object.String{
+		Value: key,
+	}
+	fn, ok := obj.Pairs[keyStr.HashKey()]
+	if !ok {
+		return NewFatalError(node.Token.ToTokenData(), "no prototype function named %q found for type=%s", keyStr.Value, value.Type())
+	}
+
+	// TODO: Make this This an actual reference somehow
+	return &object.PrototypeFunction{
+		Fn:   fn.Value.(object.FunctionObject),
+		This: &value,
 	}
 }
 

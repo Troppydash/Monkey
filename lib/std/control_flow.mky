@@ -1,5 +1,3 @@
-include("constants.mky")
-
 let while = macro(cond, func) {
     quote(__while(#{
          unquote(cond)

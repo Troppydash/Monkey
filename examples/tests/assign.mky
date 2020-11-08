@@ -15,4 +15,3 @@ assertEq(arr, [0, 99, 2, 3, 4])
 let has = { "yes": "no" }
 has["yes"] = "yes"
 assertEq(has, { "yes": "yes" })
-

@@ -1,12 +1,10 @@
-include("control_flow.mky")
-
 // forEach a hash/array
 let forEach = fn (list, func) {
-    if typeof(list) == ARRAY {
+    if typeof(list) == Array {
         __loop(fn(t) {
             func(list[t])
         }, len(list))
-    } else if typeof(list) == HASH {
+    } else if typeof(list) == Hash {
         let keys = keys(list)
         __loop(fn(i) {
             let key = keys[i]
@@ -17,14 +15,14 @@ let forEach = fn (list, func) {
 
 // returns a new hash/array base on a forEach loop
 let map = fn (list, func) {
-    if typeof(list) == ARRAY {
+    if typeof(list) == Array {
         let newList = []
         forEach(list) fn(e) {
             let result = func(e)
             append(newList, result)
         }
         return newList
-    } else if typeof(list) == HASH {
+    } else if typeof(list) == Hash {
         let newHash = {}
         forEach(list) fn(k, v) {
             let result = func(k, v)
@@ -36,7 +34,7 @@ let map = fn (list, func) {
 
 // whether an array contains an item
 let contains = fn(list, item) {
-    if typeof(list) == ARRAY {
+    if typeof(list) == Array {
         let cont = false
         forEach(list) fn(e) {
             if e == item {

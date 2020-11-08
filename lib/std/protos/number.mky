@@ -1,3 +1,3 @@
-NUMBER.prototype['cheer'] = fn() {
+Number.prototype['cheer'] = fn() {
     'HURRAY!';
 }

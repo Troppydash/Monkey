@@ -1,14 +1,11 @@
 // builtin declarations
-include("builtin.mky")
+// include("builtin.mky")
 
 // constants
 include("constants.mky")
 
 // control_flow
 include("control_flow.mky")
-
-// array functions
-include("array.mky")
 
 // prototypes
 include("protos/protos.mky")

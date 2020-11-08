@@ -1,1 +1,2 @@
+// get time in milli seconds
 let timeMilli = __time
