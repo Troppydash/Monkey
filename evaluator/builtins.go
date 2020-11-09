@@ -73,30 +73,6 @@ func init() {
 			Parameters: 1,
 		},
 
-		// TODO: Reorder function parameter
-		//"include": {
-		//	Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
-		//		if len(args) != 1 {
-		//			return WrongArgumentsAmount("include", len(args), "1", token)
-		//		}
-		//
-		//		str, ok := args[0].(*object.String)
-		//		if !ok {
-		//			return NewFatalError(token.ToTokenData(), "include parameter is not type string")
-		//		}
-		//
-		//		filename := str.Value
-		//		err := LinkAndEval(filename, env)
-		//		if err != nil {
-		//			return NewFatalError(token.ToTokenData(), "Failed to compile file %q\n", filename)
-		//
-		//		}
-		//
-		//		return NULL
-		//	},
-		//	Parameters: 1,
-		//},
-
 		"import": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
@@ -126,7 +102,7 @@ func init() {
 		},
 
 		// Array
-		"len": {
+		"__len": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return WrongArgumentsAmount("len", len(args), "1", token)
@@ -146,7 +122,7 @@ func init() {
 			Parameters: 1,
 		},
 
-		"keys": {
+		"__keys": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 1 {
 					return WrongArgumentsAmount("keys", len(args), "1", token)
@@ -258,6 +234,7 @@ func init() {
 			},
 			Parameters: 3,
 		},
+
 		"push": {
 			Fn: func(token token.Token, env *object.Environment, args ...object.Object) object.Object {
 				if len(args) != 2 {

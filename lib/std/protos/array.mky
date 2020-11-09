@@ -1,16 +1,13 @@
-// forEach a hash/array
-let forEach = fn (list, func) {
-    if typeof(list) == Array {
-        __loop(fn(t) {
-            func(list[t])
-        }, len(list))
-    } else if typeof(list) == Hash {
-        let keys = keys(list)
-        __loop(fn(i) {
-            let key = keys[i]
-            func(key, list[key])
-        }, len(keys))
-    }
+Array.prototype.forEach = fn(func) {
+     __loop(fn(t) {
+        func(this[t])
+    }, this.length)
+    return null
+}
+
+Array.prototype.map = fn(func) {
+    let newList = []
+
 }
 
 // returns a new hash/array base on a forEach loop

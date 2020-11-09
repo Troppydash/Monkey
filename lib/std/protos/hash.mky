@@ -1,0 +1,5 @@
+Hash.prototype.forEach = fn(func) {
+    this.keys.forEach(fn(k) {
+        func(k, this[k])
+    })
+}

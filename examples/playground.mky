@@ -1,8 +1,8 @@
-'hi';
-Number.prototype.add = fn (rhs) {
-    return this + rhs
-}
+let i = range(12)
 
-let number = 12
-12.add(5);
-number.cheer()
+i;
+i.pop();
+i;
+
+i.push(null, 'fds')
+i;

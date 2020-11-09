@@ -460,9 +460,28 @@ func ApplyFunction(token token.Token, function object.Object, args []object.Obje
 
 		return fn.Fn(token, environment, args...)
 	case *object.PrototypeFunction:
-		environment.Store("this", *fn.This)
-		result := ApplyFunction(token, fn.Fn, args, environment)
-		environment.Delete("this")
+		var result object.Object
+		switch Fn := fn.Fn.(type) {
+		case *object.Function:
+			oldThis, ok := Fn.Env.Get("this")
+			Fn.Env.Store("this", *fn.This)
+			result = ApplyFunction(token, fn.Fn, args, environment)
+			if ok {
+				Fn.Env.Replace("this", oldThis)
+			} else {
+				Fn.Env.Delete("this")
+			}
+		case *object.Builtin:
+			oldThis, ok := environment.Get("this")
+			environment.Store("this", *fn.This)
+			result = ApplyFunction(token, fn.Fn, args, environment)
+			if ok {
+				environment.Replace("this", oldThis)
+			} else {
+				environment.Delete("this")
+			}
+		}
+
 		return result
 	default:
 		return NewFatalError(token.ToTokenData(), "not a function: %s", function.Type())
@@ -680,17 +699,6 @@ func EvalDotExpression(left object.Object, node *ast.InfixExpression, env *objec
 		}
 		key = rightString.Value
 	}
-	//right, ok := node.Right.(*ast.Identifier)
-	//if !ok {
-	//	evalRight := Eval(node.Right, env)
-	//	rightString, ok := evalRight.(*object.String)
-	//	if !ok {
-	//		return NewFatalError(node.Token.ToTokenData(), "right expression is not an identifier. got=%s", node.Right.TokenLiteral())
-	//	}
-	//	key = rightString.Value
-	//} else {
-	//	key = right.Value
-	//}
 	switch value := left.(type) {
 	case *object.Module:
 		val, ok := value.Env.Get(key)
@@ -704,13 +712,13 @@ func EvalDotExpression(left object.Object, node *ast.InfixExpression, env *objec
 		if ok {
 			return val.Value
 		}
-		return sortObjectPrototypes(node, key, value)
+		return sortObjectPrototypes(node, key, value, env)
 	default:
-		return sortObjectPrototypes(node, key, value)
+		return sortObjectPrototypes(node, key, value, env)
 	}
 }
 
-func sortObjectPrototypes(node *ast.InfixExpression, key string, value object.Object) object.Object {
+func sortObjectPrototypes(node *ast.InfixExpression, key string, value object.Object, env *object.Environment) object.Object {
 	typeStr, ok := value.(*object.String)
 	if ok && key == "prototype" {
 		pts, ok := prototypes[object.ObjectType(typeStr.Value)]
@@ -722,7 +730,7 @@ func sortObjectPrototypes(node *ast.InfixExpression, key string, value object.Ob
 	// prototype
 	obj, ok := prototypes[value.Type()]
 	if !ok {
-		return NewFatalError(node.Token.ToTokenData(), "no prototype functions found for expression. type=%s", value.Type())
+		return NewFatalError(node.Token.ToTokenData(), "no prototype functions found for type=%s", value.Type())
 	}
 
 	keyStr := &object.String{
@@ -731,6 +739,21 @@ func sortObjectPrototypes(node *ast.InfixExpression, key string, value object.Ob
 	fn, ok := obj.Pairs[keyStr.HashKey()]
 	if !ok {
 		return NewFatalError(node.Token.ToTokenData(), "no prototype function named %q found for type=%s", keyStr.Value, value.Type())
+	}
+
+	fnObj, ok := fn.Value.(*object.Builtin)
+	if ok {
+		if fnObj.Eval {
+			oldThis, ok := env.Get("this")
+			env.Store("this", value)
+			result := fnObj.Fn(node.Token, env)
+			if ok {
+				env.Replace("this", oldThis)
+			} else {
+				env.Delete("this")
+			}
+			return result
+		}
 	}
 
 	// TODO: Make this This an actual reference somehow

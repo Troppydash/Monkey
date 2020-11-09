@@ -185,6 +185,7 @@ type Builtin struct {
 	Parameters int
 	VarArgs    bool
 	Prototype  bool
+	Eval       bool
 }
 
 func (b *Builtin) Type() ObjectType {
