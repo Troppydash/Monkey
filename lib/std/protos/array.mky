@@ -7,37 +7,24 @@ Array.prototype.forEach = fn(func) {
 
 Array.prototype.map = fn(func) {
     let newList = []
-
+    this.forEach() fn(item) {
+        newList.push(func(item))
+    }
+    return newList
 }
 
-// returns a new hash/array base on a forEach loop
-let map = fn (list, func) {
-    if typeof(list) == Array {
-        let newList = []
-        forEach(list) fn(e) {
-            let result = func(e)
-            append(newList, result)
+Array.prototype.indexOf = fn(item) {
+    let result = -1
+    let i
+    for (i = 0, i < this.length, i = i + 1) #{
+        if this[i] == item {
+            result = i
+            return break
         }
-        return newList
-    } else if typeof(list) == Hash {
-        let newHash = {}
-        forEach(list) fn(k, v) {
-            let result = func(k, v)
-            __set(newHash, k, result)
-        }
-        return newHash
     }
+    return result
 }
 
-// whether an array contains an item
-let contains = fn(list, item) {
-    if typeof(list) == Array {
-        let cont = false
-        forEach(list) fn(e) {
-            if e == item {
-                cont = true
-            }
-        }
-        return cont
-    }
+Array.prototype.contains = fn(item) {
+    return this.indexOf(item) != -1
 }

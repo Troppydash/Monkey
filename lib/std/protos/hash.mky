@@ -1,5 +1,13 @@
 Hash.prototype.forEach = fn(func) {
-    this.keys.forEach(fn(k) {
+    this.keys.forEach() fn(k) {
         func(k, this[k])
-    })
+    }
+}
+
+Hash.prototype.map = fn(func) {
+    let newHash = {}
+    this.forEach() fn(k, v) {
+        newHash[k] = func(k, v)
+    }
+    return newHash
 }

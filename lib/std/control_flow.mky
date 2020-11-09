@@ -5,16 +5,19 @@ let while = macro(cond, func) {
 }
 
 let for = macro(init, cond, aft, func) {
-    quote(#{
-        unquote(init)
-        __loop(#{
-            if !unquote(cond) {
-                return break
-            }
-            unquote(func)()
-            unquote(aft)
-        })
-    }())
+    quote(
+        #{
+            unquote(init)
+            __loop(#{
+                if !unquote(cond) {
+                    return break
+                }
+                let result = unquote(func)()
+                unquote(aft)
+                return result
+            })
+        }()
+    )
 }
 
 let ifnot = macro(cond, consq, alt) {

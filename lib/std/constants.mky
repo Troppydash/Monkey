@@ -1,4 +1,4 @@
-let continue = "CONTINUE"
+let Continue = "CONTINUE"
 
 let String = "STRING"
 let Number = "INTEGER"
@@ -7,3 +7,5 @@ let Hash = "HASH"
 let Array = "ARRAY"
 let Function = "FUNCTION"
 let Error = "ERROR"
+
+let Break = "BREAK"
