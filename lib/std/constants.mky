@@ -1,5 +1,3 @@
-let Continue = "CONTINUE"
-
 let String = "STRING"
 let Number = "INTEGER"
 let Boolean = "BOOLEAN"
@@ -8,4 +6,5 @@ let Array = "ARRAY"
 let Function = "FUNCTION"
 let Error = "ERROR"
 
+let Continue = "CONTINUE"
 let Break = "BREAK"

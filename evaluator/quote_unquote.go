@@ -64,6 +64,7 @@ func convertObjectToASTNode(unquoted object.Object, t token.Token) ast.Node {
 		//	Filename:     t.Filename,
 		//}
 		return &ast.IntegerLiteral{Token: tmpt, Value: obj.Value}
+
 	case *object.Boolean:
 		var tmpt token.Token
 		if obj.Value {

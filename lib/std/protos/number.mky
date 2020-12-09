@@ -1,3 +1,7 @@
 Number.prototype['cheer'] = fn() {
     'HURRAY!';
 }
+
+Number.prototype.times = fn() {
+
+}

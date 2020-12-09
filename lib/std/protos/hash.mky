@@ -1,13 +1,20 @@
+// Hashmap forEach
 Hash.prototype.forEach = fn(func) {
     this.keys.forEach() fn(k) {
         func(k, this[k])
     }
 }
 
+// Hashmap map
 Hash.prototype.map = fn(func) {
     let newHash = {}
     this.forEach() fn(k, v) {
         newHash[k] = func(k, v)
     }
     return newHash
+}
+
+// Hashmap deep merge
+Hash.prototype.merge = fn(another) {
+
 }

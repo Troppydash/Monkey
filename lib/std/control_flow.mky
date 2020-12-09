@@ -20,6 +20,20 @@ let for = macro(init, cond, aft, func) {
     )
 }
 
+let forEach = macro(list, func) {
+    quote(
+        #{
+           let iter = unquote(list).iter()
+           let next = null
+           __while(#{
+                (next = iter.next()) != break
+           }) #{
+                unquote(func)(next)
+           }
+        }()
+    )
+}
+
 let ifnot = macro(cond, consq, alt) {
     quote(if !unquote(cond) {
         unquote(consq)()

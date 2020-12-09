@@ -1,3 +1,4 @@
+// Array forEach
 Array.prototype.forEach = fn(func) {
      __loop(fn(t) {
         func(this[t])
@@ -5,6 +6,7 @@ Array.prototype.forEach = fn(func) {
     return null
 }
 
+// Array map
 Array.prototype.map = fn(func) {
     let newList = []
     this.forEach() fn(item) {
@@ -13,6 +15,7 @@ Array.prototype.map = fn(func) {
     return newList
 }
 
+// Array index of
 Array.prototype.indexOf = fn(item) {
     let result = -1
     let i
@@ -25,6 +28,22 @@ Array.prototype.indexOf = fn(item) {
     return result
 }
 
+// Array contains
 Array.prototype.contains = fn(item) {
     return this.indexOf(item) != -1
+}
+
+Array.prototype.iter = fn() {
+    let index = 0
+    let arr = this
+    return {
+        "next": fn() {
+            if index >= arr.length {
+                return break
+            }
+            let value = arr[index]
+            index = index + 1
+            return value
+        }
+    }
 }
